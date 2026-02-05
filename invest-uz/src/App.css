@@ -415,6 +415,199 @@ a {
   color: var(--muted);
 }
 
+.mode-pill {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.demo-controls {
+  display: grid;
+  gap: 16px;
+}
+
+.control-row {
+  display: grid;
+  gap: 8px;
+}
+
+.control-row label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--accent-3);
+}
+
+.control-row textarea,
+.control-row select {
+  background: rgba(8, 12, 18, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  font-size: 0.95rem;
+}
+
+.control-row textarea {
+  min-height: 160px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.control-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.error-text {
+  color: #ff9f9f;
+  font-size: 0.9rem;
+}
+
+.mode-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mode-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  cursor: pointer;
+  transition: 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.mode-chip.active,
+.mode-chip:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(57, 211, 198, 0.12);
+}
+
+.magnifier {
+  display: grid;
+  gap: 16px;
+}
+
+.magnifier-stage {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 28px;
+  min-height: 260px;
+  cursor: none;
+  overflow: hidden;
+}
+
+.magnifier-text {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 1rem;
+  white-space: pre-wrap;
+}
+
+.magnifier-lens {
+  position: fixed;
+  width: 220px;
+  height: 140px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(10, 16, 24, 0.55);
+  border: 1px solid rgba(57, 211, 198, 0.45);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  transform: translate(16px, 16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+  backdrop-filter: blur(6px);
+}
+
+.magnifier-lens.show {
+  opacity: 1;
+}
+
+.lens-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.lens-body {
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
+.overlay-mode,
+.split-mode {
+  display: grid;
+  gap: 16px;
+}
+
+.overlay-stage {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 28px;
+  min-height: 260px;
+  overflow: hidden;
+}
+
+.overlay-original {
+  color: rgba(232, 238, 246, 0.85);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.overlay-translation {
+  position: absolute;
+  inset: 28px;
+  color: rgba(57, 211, 198, 0.75);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  z-index: 2;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.split-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.split-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 22px;
+  display: grid;
+  gap: 10px;
+  min-height: 220px;
+}
+
+.split-panel h3 {
+  font-size: 1.05rem;
+}
+
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;

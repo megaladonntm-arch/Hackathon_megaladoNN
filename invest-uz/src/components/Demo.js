@@ -1,114 +1,258 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useMemo, useRef, useState } from 'react';
+
+const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000';
+
+const languageOptions = [
+  { value: 'en', label: 'English' },
+  { value: 'ru', label: 'Russian' },
+  { value: 'uz', label: 'Uzbek' },
+  { value: 'tr', label: 'Turkish' },
+  { value: 'de', label: 'German' },
+  { value: 'fr', label: 'French' },
+  { value: 'es', label: 'Spanish' }
+];
+
+const MODE_MAGNIFIER = 'magnifier';
+const MODE_OVERLAY = 'overlay';
+const MODE_SPLIT = 'split';
+
+const defaultText =
+  'Reading a foreign language becomes effortless when translation appears exactly where you need it. ' +
+  'Move the magnifier over any word or phrase to instantly see the meaning without breaking focus. ' +
+  'You can also switch to layered or split modes to read with context.';
 
 function Demo() {
-  const overlayRef = useRef(null);
-  const [overlayOpen, setOverlayOpen] = useState(false);
-  const [selectedText, setSelectedText] = useState('');
+  const stageRef = useRef(null);
 
-  const renderOverlay = (text) => {
-    const win = overlayRef.current;
-    if (!win || win.closed) {
-      return;
-    }
-    const target = win.document.getElementById('overlay-text');
-    if (target) {
-      target.textContent = text || 'Matndan parcha tanlanganda bu yerda ko�rinadi.';
-    }
-  };
+  const [inputText, setInputText] = useState(defaultText);
+  const [targetLang, setTargetLang] = useState('ru');
+  const [mode, setMode] = useState(MODE_MAGNIFIER);
+  const [translatedText, setTranslatedText] = useState('');
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState('');
+  const [lensState, setLensState] = useState({
+    x: 0,
+    y: 0,
+    visible: false,
+    word: '',
+    text: ''
+  });
 
-  const openOverlay = () => {
-    if (overlayRef.current && !overlayRef.current.closed) {
-      overlayRef.current.focus();
-      return;
-    }
-    const win = window.open('', 'readerOverlay', 'width=360,height=480,top=120,left=120');
-    if (!win) {
-      return;
-    }
-    const html = `<!doctype html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Reader-Overlay</title>
-          <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" />
-          <style>
-            :root { color-scheme: dark; }
-            body { margin: 0; font-family: 'Sora', sans-serif; background: #0b0f14; color: #e9eef3; }
-            .wrap { padding: 20px; display: grid; gap: 16px; }
-            .title { font-weight: 700; font-size: 18px; letter-spacing: 0.02em; }
-            .box { background: #121820; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; min-height: 240px; line-height: 1.5; }
-            .hint { color: rgba(233,238,243,0.6); font-size: 13px; }
-          </style>
-        </head>
-        <body>
-          <div class="wrap">
-            <div class="title">Reader-Overlay</div>
-            <div id="overlay-text" class="box">Matndan parcha tanlanganda bu yerda ko�rinadi.</div>
-            <div class="hint">Main oynadagi matndan parcha tanlang.</div>
-          </div>
-        </body>
-      </html>`;
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-    overlayRef.current = win;
-    setOverlayOpen(true);
-    renderOverlay(selectedText);
-    win.addEventListener('beforeunload', () => setOverlayOpen(false));
-  };
+  const canTranslate = inputText.trim().length > 0;
 
-  const handleSelection = useCallback(() => {
-    const text = window.getSelection()?.toString() || '';
-    setSelectedText(text);
-    renderOverlay(text);
+  const modeLabel = useMemo(() => {
+    if (mode === MODE_MAGNIFIER) return 'Mode 1: Magnifier';
+    if (mode === MODE_OVERLAY) return 'Mode 2: Layered';
+    return 'Mode 3: Split';
+  }, [mode]);
+
+  const sourceTokens = useMemo(() => inputText.match(/\S+/g) || [], [inputText]);
+  const translatedTokens = useMemo(() => translatedText.match(/\S+/g) || [], [translatedText]);
+
+  const translateText = useCallback(async (text, language) => {
+    const response = await fetch(`${API_BASE}/api/translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, target_language: language })
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      const message = payload.detail || 'Translation failed.';
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+    return data.translated_text || '';
   }, []);
 
-  useEffect(() => {
-    document.addEventListener('selectionchange', handleSelection);
-    return () => document.removeEventListener('selectionchange', handleSelection);
-  }, [handleSelection]);
+  const handleTranslate = useCallback(async () => {
+    if (!canTranslate) {
+      return;
+    }
+    setStatus('loading');
+    setError('');
+    try {
+      const result = await translateText(inputText, targetLang);
+      setTranslatedText(result);
+      setStatus('success');
+    } catch (err) {
+      setStatus('error');
+      setError(err.message || 'Translation failed.');
+    }
+  }, [canTranslate, inputText, targetLang, translateText]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (overlayRef.current && overlayRef.current.closed) {
-        overlayRef.current = null;
-        setOverlayOpen(false);
+  const updateLens = useCallback(
+    (event) => {
+      const stage = stageRef.current;
+      if (!stage) {
+        return;
       }
-    }, 600);
-    return () => clearInterval(interval);
-  }, []);
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const wordEl = target && target.closest('[data-word-index]');
+      if (!wordEl || !stage.contains(wordEl)) {
+        setLensState((prev) => ({ ...prev, visible: false }));
+        return;
+      }
+
+      const index = Number(wordEl.dataset.wordIndex || 0);
+      const originalWord = sourceTokens[index] || '';
+      const translatedWord = translatedTokens[index] || '';
+
+      setLensState({
+        x: event.clientX,
+        y: event.clientY,
+        visible: true,
+        word: originalWord,
+        text: translatedWord || (translatedText ? 'Нет перевода' : 'Нажмите «Перевести»')
+      });
+    },
+    [sourceTokens, translatedTokens, translatedText]
+  );
 
   return (
     <main className="page demo">
       <section className="demo-hero">
         <div>
           <h1>Demo</h1>
-          <p className="muted">Overlay oynasini oching va matndan parcha tanlab ko�ring.</p>
+          <p className="muted">Переводим весь текст один раз и показываем перевод в лупе.</p>
         </div>
-        <button className="primary-btn" onClick={openOverlay}>Overlayni ochish</button>
+        <div className="mode-pill">{modeLabel}</div>
       </section>
 
-      <section className="demo-grid">
-        <div className="demo-reader">
-          <h2>Matn</h2>
-          <p>
-            Reading foreign texts becomes easier when translation or context appears next to your line of sight. Select any sentence in
-            this paragraph to see the overlay update. This keeps your focus on the meaning instead of switching tabs.
-          </p>
-          <p>
-            Reader-Overlay works great for learning, research, and fast comprehension. Highlight a few words and the companion window
-            instantly mirrors your selection.
-          </p>
+      <section className="demo-controls panel">
+        <div className="control-row">
+          <label htmlFor="demo-text">Текст для перевода</label>
+          <textarea
+            id="demo-text"
+            value={inputText}
+            onChange={(event) => setInputText(event.target.value)}
+            placeholder="Вставьте текст для перевода"
+          />
         </div>
-        <div className="demo-selection">
-          <h2>Tanlangan parcha</h2>
-          <div className="selection-box">{selectedText || 'Hozircha hech narsa tanlanmadi.'}</div>
-          <div className="status">
-            <span className={overlayOpen ? 'dot on' : 'dot'}></span>
-            <p>{overlayOpen ? 'Overlay ochiq' : 'Overlay yopiq'}</p>
-          </div>
+        <div className="control-row">
+          <label htmlFor="demo-lang">Язык перевода</label>
+          <select
+            id="demo-lang"
+            value={targetLang}
+            onChange={(event) => setTargetLang(event.target.value)}
+          >
+            {languageOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="control-actions">
+          <button className="primary-btn" onClick={handleTranslate} disabled={!canTranslate || status === 'loading'}>
+            {status === 'loading' ? 'Перевод...' : 'Перевести'}
+          </button>
+          <button
+            className="ghost-btn"
+            onClick={() => {
+              setInputText('');
+              setTranslatedText('');
+              setStatus('idle');
+              setError('');
+              setLensState((prev) => ({ ...prev, visible: false, word: '', text: '' }));
+            }}
+          >
+            Очистить
+          </button>
+          {error && <span className="error-text">{error}</span>}
+        </div>
+        <div className="mode-switch">
+          <button
+            type="button"
+            className={mode === MODE_MAGNIFIER ? 'mode-chip active' : 'mode-chip'}
+            onClick={() => setMode(MODE_MAGNIFIER)}
+          >
+            1. Лупа-курсор
+          </button>
+          <button
+            type="button"
+            className={mode === MODE_OVERLAY ? 'mode-chip active' : 'mode-chip'}
+            onClick={() => setMode(MODE_OVERLAY)}
+          >
+            2. Перевод на слое
+          </button>
+          <button
+            type="button"
+            className={mode === MODE_SPLIT ? 'mode-chip active' : 'mode-chip'}
+            onClick={() => setMode(MODE_SPLIT)}
+          >
+            3. Split-view
+          </button>
         </div>
       </section>
+
+      {mode === MODE_MAGNIFIER && (
+        <section className="magnifier">
+          <div className="section-head">
+            <h2>Режим 1: Лупа вместо курсора</h2>
+            <p>Сначала переведи весь текст, затем наведи лупу на слово.</p>
+          </div>
+          <div
+            ref={stageRef}
+            className="magnifier-stage"
+            onMouseMove={updateLens}
+            onMouseLeave={() => setLensState((prev) => ({ ...prev, visible: false }))}
+          >
+            <div className="magnifier-text">
+              {(sourceTokens.length ? sourceTokens : ['Введите', 'текст', 'выше']).map((token, index) => (
+                <span key={`${token}-${index}`} data-word-index={index}>
+                  {token}{' '}
+                </span>
+              ))}
+            </div>
+            <div
+              className={lensState.visible ? 'magnifier-lens show' : 'magnifier-lens'}
+              style={{
+                left: lensState.x,
+                top: lensState.y
+              }}
+            >
+              <div className="lens-title">{lensState.word || 'Перевод'}</div>
+              <div className="lens-body">
+                {lensState.text || 'Наведите на слово'}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {mode === MODE_OVERLAY && (
+        <section className="overlay-mode">
+          <div className="section-head">
+            <h2>Режим 2: Перевод на втором слое</h2>
+            <p>Оригинал остается основным, перевод мягко накладывается поверх.</p>
+          </div>
+          <div className="overlay-stage">
+            <div className="overlay-original">{inputText || 'Введите текст выше'}</div>
+            <div className="overlay-translation">{translatedText || 'Сначала нажмите «Перевести»'}</div>
+          </div>
+        </section>
+      )}
+
+      {mode === MODE_SPLIT && (
+        <section className="split-mode">
+          <div className="section-head">
+            <h2>Режим 3: Два столбца</h2>
+            <p>Классическое разделение для спокойного чтения и сверки.</p>
+          </div>
+          <div className="split-panels">
+            <div className="split-panel">
+              <h3>Оригинал</h3>
+              <p>{inputText || 'Введите текст выше'}</p>
+            </div>
+            <div className="split-panel">
+              <h3>Перевод</h3>
+              <p>{translatedText || 'Сначала нажмите «Перевести»'}</p>
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }
