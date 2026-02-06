@@ -150,7 +150,7 @@ function Demo() {
       <section className="demo-hero">
         <div>
           <h1>Demo</h1>
-          <p className="muted">Переводим весь текст один раз и показываем перевод в лупе.</p>
+          <p className="muted">Matnni bir marta tarjima qilamiz va lupaning ichida ko‘rsatamiz.</p>
         </div>
         <div className="mode-pill">{modeLabel}</div>
       </section>
@@ -158,6 +158,7 @@ function Demo() {
       <section className="demo-controls panel">
         <div className="control-row">
           <label htmlFor="demo-text">Текст для перевода</label>
+          <p className="muted">Matnni shu yerga joylang.</p>
           <textarea
             id="demo-text"
             value={inputText}

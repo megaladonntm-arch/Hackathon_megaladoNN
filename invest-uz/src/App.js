@@ -4,7 +4,7 @@ import Demo from './components/Demo';
 import './App.css';
 
 const navItems = [
-  { path: '/', label: 'Landing' },
+  { path: '/', label: 'Bosh sahifa' },
   { path: '/demo', label: 'Demo' }
 ];
 
@@ -16,8 +16,8 @@ function App() {
           <div className="brand">
             <div className="brand-mark">RO</div>
             <div>
-              <p className="brand-title">Reader-Overlay</p>
-              <p className="brand-subtitle">Smart companion window for reading</p>
+              <p className="brand-title">Reader-Overlay Kids</p>
+              <p className="brand-subtitle">8-16 yosh uchun quvnoq o‘qish yordamchisi</p>
             </div>
           </div>
           <nav className="nav">

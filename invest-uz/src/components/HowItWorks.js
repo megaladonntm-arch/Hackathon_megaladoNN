@@ -2,21 +2,21 @@
   return (
     <section className="how section section-demo" id="demo">
       <div className="section-head">
-        <h2>Demo</h2>
-        <p>Uch xil rejim: loupada instant tarjima, layer uslubi va split-view. Hammasi bitta oqimda.</p>
+        <h2>Qanday ishlaydi</h2>
+        <p>Uchta rejim: lupaning ichida tarjima, ustma-ust ko‘rinish va ikki ustun.</p>
       </div>
       <div className="how-grid">
         <div className="how-card">
-          <h3>Magnifier mode</h3>
-          <p>So‘z ustiga borib, tarjimani doira ichida ko‘rasiz.</p>
+          <h3>Lupa rejimi</h3>
+          <p>So‘z ustiga borsang, tarjima doira ichida chiqadi.</p>
         </div>
         <div className="how-card">
-          <h3>Layer mode</h3>
-          <p>Tarjima original ustida yumshoq ko‘rinadi, kontekst yo‘qolmaydi.</p>
+          <h3>Ustma-ust</h3>
+          <p>Tarjima original ustida yumshoq ko‘rinadi, matn yo‘qolmaydi.</p>
         </div>
         <div className="how-card">
-          <h3>Split mode</h3>
-          <p>Ikki ustunli ko‘rinishda solishtirish va o‘rganish oson.</p>
+          <h3>Ikki ustun</h3>
+          <p>Original va tarjima yonma-yon, o‘qish oson.</p>
         </div>
       </div>
     </section>

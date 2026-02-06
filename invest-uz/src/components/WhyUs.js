@@ -3,20 +3,20 @@
     <section className="why section section-why" id="why">
       <div className="section-head">
         <h2>Nega biz?</h2>
-        <p>Reader-Overlay kognitiv yukni kamaytirish orqali o‘qish jarayonini yengillashtiradi.</p>
+        <p>Bolalar o‘qishini yengillashtirish va qiziqarli qilish uchun.</p>
       </div>
       <div className="why-grid">
         <div className="why-card">
           <h3>Bir fokus</h3>
-          <p>Matn va izoh bitta ekranda bo‘lib, diqqat uzilmaydi.</p>
+          <p>Matn va tarjima bitta joyda.</p>
         </div>
         <div className="why-card">
           <h3>Tez o‘rganish</h3>
-          <p>Instant kontekst tufayli yangi so‘zlar tezroq eslab qolindi.</p>
+          <p>Yangi so‘zlar tezroq yodda qoladi.</p>
         </div>
         <div className="why-card">
-          <h3>Eng past charchoq</h3>
-          <p>Takroriy tab almashish yo‘q, kognitiv yuk minimal bo‘ladi.</p>
+          <h3>Kam charchoq</h3>
+          <p>Ko‘p tab almashtirish yo‘q.</p>
         </div>
       </div>
     </section>

@@ -1,17 +1,19 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Sora:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&family=Fredoka:wght@400;600;700&display=swap');
 
 :root {
-  --bg: #07090d;
-  --bg-alt: #0c1118;
-  --panel: rgba(17, 23, 32, 0.78);
-  --panel-strong: rgba(20, 28, 39, 0.92);
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #e8eef6;
-  --muted: rgba(232, 238, 246, 0.68);
-  --accent: #39d3c6;
-  --accent-2: #7b5cff;
-  --accent-3: #f7b955;
-  --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  --bg: #fff2d9;
+  --bg-alt: #f8e4ff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --panel-strong: rgba(255, 255, 255, 0.98);
+  --border: rgba(22, 16, 44, 0.12);
+  --text: #1b1433;
+  --muted: rgba(27, 20, 51, 0.7);
+  --accent: #ff7a59;
+  --accent-2: #5b8dff;
+  --accent-3: #3ccf91;
+  --shadow: 0 18px 40px rgba(27, 20, 51, 0.2);
+  --yellow: #ffe97a;
+  --pink: #ffb4d9;
 }
 
 * {
@@ -21,7 +23,7 @@
 }
 
 body {
-  font-family: 'Sora', sans-serif;
+  font-family: 'Baloo 2', sans-serif;
   background: var(--bg);
   color: var(--text);
 }
@@ -33,10 +35,39 @@ a {
 
 .app {
   min-height: 100vh;
-  background: radial-gradient(circle at 12% 12%, rgba(57, 211, 198, 0.18), transparent 45%),
-    radial-gradient(circle at 88% 20%, rgba(123, 92, 255, 0.16), transparent 40%),
-    radial-gradient(circle at 50% 90%, rgba(247, 185, 85, 0.14), transparent 45%),
-    linear-gradient(180deg, #06080c 0%, #0a0f15 100%);
+  background: radial-gradient(circle at 10% 10%, rgba(255, 180, 217, 0.5), transparent 40%),
+    radial-gradient(circle at 90% 12%, rgba(91, 141, 255, 0.35), transparent 38%),
+    radial-gradient(circle at 40% 90%, rgba(60, 207, 145, 0.35), transparent 40%),
+    linear-gradient(180deg, #fff5e6 0%, #f4ecff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.app::before,
+.app::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.6;
+  filter: blur(0.5px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app::before {
+  width: 280px;
+  height: 280px;
+  background: var(--yellow);
+  top: -60px;
+  left: -80px;
+}
+
+.app::after {
+  width: 220px;
+  height: 220px;
+  background: var(--pink);
+  bottom: -70px;
+  right: -60px;
 }
 
 .topbar {
@@ -46,10 +77,10 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 22px 6vw;
-  backdrop-filter: blur(18px);
-  background: rgba(6, 9, 13, 0.85);
-  border-bottom: 1px solid var(--border);
+  padding: 18px 6vw;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.7);
+  border-bottom: 2px dashed rgba(27, 20, 51, 0.12);
 }
 
 .brand {
@@ -61,19 +92,19 @@ a {
 .brand-mark {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 18px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, rgba(57, 211, 198, 0.25), rgba(123, 92, 255, 0.25));
-  color: var(--accent);
+  background: linear-gradient(135deg, rgba(255, 122, 89, 0.35), rgba(91, 141, 255, 0.35));
+  color: #1b1433;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  border: 1px solid var(--border);
+  letter-spacing: 0.02em;
+  border: 2px solid rgba(27, 20, 51, 0.15);
 }
 
 .brand-title {
-  font-family: 'Fraunces', serif;
-  font-size: 1.1rem;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.15rem;
   font-weight: 600;
 }
 
@@ -93,16 +124,16 @@ a {
   padding: 8px 14px;
   border-radius: 999px;
   color: var(--muted);
-  border: 1px solid transparent;
+  border: 2px solid transparent;
   transition: 0.25s ease;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .nav-link.active,
 .nav-link:hover {
   color: var(--text);
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(27, 20, 51, 0.2);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .page {
@@ -110,15 +141,17 @@ a {
   display: flex;
   flex-direction: column;
   gap: 96px;
+  position: relative;
+  z-index: 1;
 }
 
 .section {
   position: relative;
   padding: 34px;
-  border-radius: 30px;
-  border: 1px solid var(--border);
-  background: rgba(10, 14, 20, 0.72);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35);
+  border-radius: 32px;
+  border: 2px solid var(--border);
+  background: var(--panel);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
@@ -126,11 +159,11 @@ a {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 20% 20%, rgba(57, 211, 198, 0.08), transparent 55%),
-    radial-gradient(circle at 85% 10%, rgba(123, 92, 255, 0.08), transparent 45%),
-    radial-gradient(circle at 20% 90%, rgba(247, 185, 85, 0.08), transparent 55%);
+  background: radial-gradient(circle at 15% 15%, rgba(255, 122, 89, 0.12), transparent 55%),
+    radial-gradient(circle at 85% 10%, rgba(91, 141, 255, 0.12), transparent 45%),
+    radial-gradient(circle at 20% 90%, rgba(60, 207, 145, 0.12), transparent 55%);
   pointer-events: none;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .section > * {
@@ -139,33 +172,33 @@ a {
 }
 
 .section-landing {
-  background: linear-gradient(140deg, rgba(57, 211, 198, 0.12), rgba(10, 16, 24, 0.9));
-  border-color: rgba(57, 211, 198, 0.28);
+  background: linear-gradient(140deg, rgba(255, 122, 89, 0.2), rgba(255, 255, 255, 0.95));
+  border-color: rgba(255, 122, 89, 0.35);
 }
 
 .section-problem {
-  background: linear-gradient(135deg, rgba(123, 92, 255, 0.14), rgba(10, 16, 24, 0.9));
-  border-color: rgba(123, 92, 255, 0.28);
+  background: linear-gradient(135deg, rgba(91, 141, 255, 0.18), rgba(255, 255, 255, 0.95));
+  border-color: rgba(91, 141, 255, 0.35);
 }
 
 .section-demo {
-  background: linear-gradient(135deg, rgba(247, 185, 85, 0.16), rgba(10, 16, 24, 0.9));
-  border-color: rgba(247, 185, 85, 0.32);
+  background: linear-gradient(135deg, rgba(255, 233, 122, 0.35), rgba(255, 255, 255, 0.95));
+  border-color: rgba(255, 233, 122, 0.6);
 }
 
 .section-mvp {
-  background: linear-gradient(135deg, rgba(57, 211, 198, 0.1), rgba(123, 92, 255, 0.12));
-  border-color: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(60, 207, 145, 0.2), rgba(255, 255, 255, 0.95));
+  border-color: rgba(60, 207, 145, 0.4);
 }
 
 .section-why {
-  background: linear-gradient(135deg, rgba(90, 196, 255, 0.12), rgba(10, 16, 24, 0.9));
-  border-color: rgba(90, 196, 255, 0.22);
+  background: linear-gradient(135deg, rgba(255, 180, 217, 0.2), rgba(255, 255, 255, 0.95));
+  border-color: rgba(255, 180, 217, 0.45);
 }
 
 .section-team {
-  background: linear-gradient(135deg, rgba(247, 185, 85, 0.12), rgba(10, 16, 24, 0.9));
-  border-color: rgba(247, 185, 85, 0.24);
+  background: linear-gradient(135deg, rgba(255, 233, 122, 0.22), rgba(255, 255, 255, 0.95));
+  border-color: rgba(255, 233, 122, 0.55);
 }
 
 .hero {
@@ -176,7 +209,7 @@ a {
 }
 
 .hero-content h1 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fredoka', sans-serif;
   font-size: clamp(2.8rem, 3vw + 1.8rem, 4.2rem);
   line-height: 1.05;
   margin-bottom: 16px;
@@ -184,15 +217,15 @@ a {
 
 .eyebrow {
   text-transform: uppercase;
-  letter-spacing: 0.35em;
-  font-size: 0.7rem;
-  color: var(--accent);
+  letter-spacing: 0.25em;
+  font-size: 0.72rem;
+  color: var(--accent-2);
   margin-bottom: 12px;
 }
 
 .hero-lead {
   color: var(--muted);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   line-height: 1.7;
   max-width: 560px;
 }
@@ -206,24 +239,24 @@ a {
 
 .primary-btn,
 .ghost-btn {
-  padding: 12px 20px;
-  border-radius: 12px;
+  padding: 12px 22px;
+  border-radius: 16px;
   font-weight: 600;
   border: none;
   cursor: pointer;
   transition: 0.25s ease;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .primary-btn {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: #02040a;
+  color: #1b1433;
   box-shadow: var(--shadow);
 }
 
 .ghost-btn {
   background: transparent;
-  border: 1px solid var(--border);
+  border: 2px dashed rgba(27, 20, 51, 0.2);
   color: var(--text);
 }
 
@@ -256,8 +289,8 @@ a {
 
 .glass {
   background: var(--panel-strong);
-  border: 1px solid var(--border);
-  border-radius: 22px;
+  border: 2px solid var(--border);
+  border-radius: 24px;
   padding: 26px;
   box-shadow: var(--shadow);
   display: grid;
@@ -265,7 +298,7 @@ a {
 }
 
 .glass-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fredoka', sans-serif;
   font-size: 1.4rem;
 }
 
@@ -282,8 +315,8 @@ a {
 .chip {
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(57, 211, 198, 0.15);
-  color: var(--accent);
+  background: rgba(91, 141, 255, 0.18);
+  color: #1b1433;
   font-size: 0.8rem;
 }
 
@@ -299,14 +332,14 @@ a {
 
 .panel {
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 20px;
+  border: 2px solid var(--border);
+  border-radius: 22px;
   padding: 24px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
 }
 
 .panel h2 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fredoka', sans-serif;
   margin-bottom: 12px;
 }
 
@@ -319,8 +352,8 @@ a {
 }
 
 .panel.accent {
-  background: linear-gradient(140deg, rgba(57, 211, 198, 0.12), rgba(123, 92, 255, 0.12));
-  border-color: rgba(57, 211, 198, 0.35);
+  background: linear-gradient(140deg, rgba(60, 207, 145, 0.18), rgba(91, 141, 255, 0.12));
+  border-color: rgba(60, 207, 145, 0.4);
 }
 
 .section-head {
@@ -330,7 +363,7 @@ a {
 }
 
 .section-head h2 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fredoka', sans-serif;
   font-size: 2.1rem;
 }
 
@@ -352,8 +385,8 @@ a {
 .team-card,
 .why-card {
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 18px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
   padding: 20px;
   display: grid;
   gap: 10px;
@@ -366,9 +399,9 @@ a {
 
 .team-role {
   font-size: 0.75rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--accent-3);
+  color: var(--accent-2);
 }
 
 .team-name {
@@ -384,7 +417,7 @@ a {
   margin-top: 16px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 2px dashed rgba(27, 20, 51, 0.2);
   color: var(--text);
 }
 
@@ -395,8 +428,8 @@ a {
 
 .roadmap-item {
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  border: 2px solid var(--border);
+  border-radius: 18px;
   padding: 16px 18px;
   display: grid;
   gap: 8px;
@@ -420,15 +453,15 @@ a {
 }
 
 .demo-hero h1 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Fredoka', sans-serif;
   font-size: 2.6rem;
 }
 
 .demo-reader,
 .demo-selection {
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 20px;
+  border: 2px solid var(--border);
+  border-radius: 22px;
   padding: 22px;
   display: grid;
   gap: 16px;
@@ -441,7 +474,7 @@ a {
 }
 
 .selection-box {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 14px;
   padding: 16px;
   min-height: 160px;
@@ -459,12 +492,12 @@ a {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(27, 20, 51, 0.25);
 }
 
 .dot.on {
-  background: var(--accent);
-  box-shadow: 0 0 12px rgba(57, 211, 198, 0.6);
+  background: var(--accent-3);
+  box-shadow: 0 0 12px rgba(60, 207, 145, 0.6);
 }
 
 .muted {
@@ -474,8 +507,8 @@ a {
 .mode-pill {
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  border: 2px dashed rgba(27, 20, 51, 0.2);
+  background: rgba(255, 255, 255, 0.7);
   color: var(--muted);
   font-size: 0.85rem;
 }
@@ -494,17 +527,17 @@ a {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: var(--accent-3);
+  color: var(--accent-2);
 }
 
 .control-row textarea,
 .control-row select {
-  background: rgba(8, 12, 18, 0.9);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--border);
+  border-radius: 16px;
   padding: 12px 14px;
   color: var(--text);
-  font-family: 'Sora', sans-serif;
+  font-family: 'Baloo 2', sans-serif;
   font-size: 0.95rem;
 }
 
@@ -522,7 +555,7 @@ a {
 }
 
 .error-text {
-  color: #ff9f9f;
+  color: #d43c3c;
   font-size: 0.9rem;
 }
 
@@ -535,8 +568,8 @@ a {
 .mode-chip {
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.7);
   color: var(--muted);
   cursor: pointer;
   transition: 0.2s ease;
@@ -546,8 +579,8 @@ a {
 .mode-chip.active,
 .mode-chip:hover {
   color: var(--text);
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(57, 211, 198, 0.12);
+  border-color: rgba(27, 20, 51, 0.2);
+  background: rgba(255, 122, 89, 0.2);
 }
 
 .magnifier {
@@ -558,8 +591,8 @@ a {
 .magnifier-stage {
   position: relative;
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 22px;
+  border: 2px solid var(--border);
+  border-radius: 26px;
   padding: 28px;
   min-height: 260px;
   cursor: none;
@@ -579,9 +612,9 @@ a {
   height: 150px;
   padding: 16px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18), rgba(9, 14, 21, 0.78) 70%);
-  border: 2px solid rgba(57, 211, 198, 0.55);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55), inset 0 0 18px rgba(57, 211, 198, 0.2);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(255, 122, 89, 0.15) 70%);
+  border: 3px solid rgba(91, 141, 255, 0.55);
+  box-shadow: 0 18px 40px rgba(27, 20, 51, 0.3), inset 0 0 18px rgba(91, 141, 255, 0.2);
   transform: translate(-50%, -50%);
   opacity: 0;
   pointer-events: none;
@@ -602,8 +635,8 @@ a {
   position: absolute;
   inset: 18px;
   background:
-    linear-gradient(90deg, transparent 49%, rgba(57, 211, 198, 0.6) 50%, transparent 51%),
-    linear-gradient(0deg, transparent 49%, rgba(57, 211, 198, 0.6) 50%, transparent 51%);
+    linear-gradient(90deg, transparent 49%, rgba(91, 141, 255, 0.7) 50%, transparent 51%),
+    linear-gradient(0deg, transparent 49%, rgba(91, 141, 255, 0.7) 50%, transparent 51%);
   pointer-events: none;
   opacity: 0.75;
 }
@@ -616,7 +649,7 @@ a {
   top: 10%;
   left: 12%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent 70%);
   opacity: 0.7;
   pointer-events: none;
 }
@@ -625,7 +658,7 @@ a {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: var(--accent);
+  color: var(--accent-2);
   margin-bottom: 8px;
 }
 
@@ -636,13 +669,68 @@ a {
   opacity: 0.95;
 }
 
+.overlay-mode,
+.split-mode {
+  display: grid;
+  gap: 16px;
+}
+
+.overlay-stage {
+  position: relative;
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 26px;
+  padding: 28px;
+  min-height: 260px;
+  overflow: hidden;
+}
+
+.overlay-original {
+  color: rgba(27, 20, 51, 0.85);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.overlay-translation {
+  position: absolute;
+  inset: 28px;
+  color: rgba(91, 141, 255, 0.75);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  z-index: 2;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.split-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.split-panel {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 22px;
+  padding: 22px;
+  display: grid;
+  gap: 10px;
+  min-height: 220px;
+}
+
+.split-panel h3 {
+  font-size: 1.05rem;
+}
+
 .random-words {
   display: grid;
   gap: 12px;
   padding: 16px;
-  border-radius: 14px;
-  background: rgba(8, 12, 18, 0.7);
-  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--border);
 }
 
 .random-words-head {
@@ -666,12 +754,12 @@ a {
 
 .random-words-controls input {
   width: 120px;
-  background: rgba(8, 12, 18, 0.9);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid var(--border);
+  border-radius: 14px;
   padding: 10px 12px;
   color: var(--text);
-  font-family: 'Sora', sans-serif;
+  font-family: 'Baloo 2', sans-serif;
 }
 
 .random-words-list {
@@ -683,65 +771,10 @@ a {
 .random-chip {
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(57, 211, 198, 0.14);
-  border: 1px solid rgba(57, 211, 198, 0.35);
+  background: rgba(255, 122, 89, 0.18);
+  border: 2px solid rgba(255, 122, 89, 0.35);
   color: var(--text);
   font-size: 0.85rem;
-}
-
-.overlay-mode,
-.split-mode {
-  display: grid;
-  gap: 16px;
-}
-
-.overlay-stage {
-  position: relative;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 28px;
-  min-height: 260px;
-  overflow: hidden;
-}
-
-.overlay-original {
-  color: rgba(232, 238, 246, 0.85);
-  line-height: 1.7;
-  white-space: pre-wrap;
-  position: relative;
-  z-index: 1;
-}
-
-.overlay-translation {
-  position: absolute;
-  inset: 28px;
-  color: rgba(57, 211, 198, 0.75);
-  line-height: 1.7;
-  white-space: pre-wrap;
-  z-index: 2;
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
-.split-panels {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-}
-
-.split-panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 22px;
-  display: grid;
-  gap: 10px;
-  min-height: 220px;
-}
-
-.split-panel h3 {
-  font-size: 1.05rem;
 }
 
 @media (max-width: 900px) {
