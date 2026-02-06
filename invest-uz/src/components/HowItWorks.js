@@ -1,22 +1,22 @@
-function HowItWorks() {
+﻿function HowItWorks() {
   return (
-    <section className="how" id="how">
+    <section className="how section section-demo" id="demo">
       <div className="section-head">
-        <h2>Yechim qanday ishlaydi</h2>
-        <p>Asosiy oynada tanlangan matn Window API orqali alohida overlay oynasiga uzatiladi.</p>
+        <h2>Demo</h2>
+        <p>Uch xil rejim: loupada instant tarjima, layer uslubi va split-view. Hammasi bitta oqimda.</p>
       </div>
       <div className="how-grid">
         <div className="how-card">
-          <h3>React UI</h3>
-          <p>Asosiy interfeysda o�qish muhiti va tanlangan matnni kuzatish.</p>
+          <h3>Magnifier mode</h3>
+          <p>So‘z ustiga borib, tarjimani doira ichida ko‘rasiz.</p>
         </div>
         <div className="how-card">
-          <h3>Window API</h3>
-          <p>window.open orqali kichik companion oynasi yaratiladi va sinxron ishlaydi.</p>
+          <h3>Layer mode</h3>
+          <p>Tarjima original ustida yumshoq ko‘rinadi, kontekst yo‘qolmaydi.</p>
         </div>
         <div className="how-card">
-          <h3>Real-time sync</h3>
-          <p>Tanlangan matn bir zumda overlay oynada ko�rinadi.</p>
+          <h3>Split mode</h3>
+          <p>Ikki ustunli ko‘rinishda solishtirish va o‘rganish oson.</p>
         </div>
       </div>
     </section>

@@ -30,6 +30,15 @@ function App() {
                 {item.label}
               </NavLink>
             ))}
+            <a className="nav-link" href="/#mvp">
+              MVP
+            </a>
+            <a className="nav-link" href="/#problem">
+              Muammo → Yechim
+            </a>
+            <a className="nav-link" href="/#why">
+              Nega Biz?
+            </a>
             <a className="nav-link" href="https://github.com/megaladonntm-arch" target="_blank" rel="noreferrer">
               GitHub
             </a>

@@ -4,7 +4,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from M_app.M_Src_Backend.services.text_analyzer.ai_translator import MegaladoNNTranslator
+from M_app.M_Src_Backend.services.text_analyzer.ai_text_analyzer import MegaladoNNTranslator
+
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("translator")
@@ -32,7 +34,7 @@ class TranslateResponse(BaseModel):
 
 
 def build_translator(target_language: str) -> MegaladoNNTranslator:
-    api_key = "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"
+    api_key = ""
     model = "tngtech/deepseek-r1t2-chimera:free"
     base_url = "https://openrouter.ai/api/v1"
     return MegaladoNNTranslator(
@@ -46,6 +48,7 @@ def build_translator(target_language: str) -> MegaladoNNTranslator:
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok"}
+
 
 
 @app.post("/api/translate", response_model=TranslateResponse)
@@ -62,3 +65,8 @@ def translate(payload: TranslateRequest) -> TranslateResponse:
         target_language=payload.target_language,
         model=translator.model,
     )
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="127.0.0.1", port=8000)

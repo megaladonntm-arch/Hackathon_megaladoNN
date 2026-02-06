@@ -10,10 +10,10 @@ function LandingPage() {
     <main className="page">
       <HeroSection />
       <ProblemSolution />
-      <HowItWorks />
-      <TeamSection />
-      <WhyUs />
       <Roadmap />
+      <HowItWorks />
+      <WhyUs />
+      <TeamSection />
     </main>
   );
 }

@@ -52,7 +52,7 @@ class MegaladoNNTranslator:
         if len(trimmed) <= max_chars:
             return self._translate_chunk(trimmed)
 
-        chunks = self._split_long_block(trimmed, max_chars)
+        chunks = self._split_long_block(trimmed, max_chars)#api_key
         translations: list[str] = []
         for chunk in chunks:
             translated = self._translate_chunk(chunk)
@@ -101,7 +101,9 @@ class MegaladoNNTranslator:
             ],
         )
 
-        return response.choices[0].message.content.strip()
+        text_response = response.choices[0].message.content.strip()
+        return text_response
+
 
     def _is_small_talk(self, text: str) -> bool:
         return bool(self.small_talk_pattern.search(text or ""))

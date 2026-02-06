@@ -2,7 +2,7 @@
 
 
 def get_translator(target_language: str) -> MegaladoNNTranslator:
-    api_key = "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"
+    api_key = "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"
     if not api_key:
         raise RuntimeError("Missing OPENROUTER_API_KEY or OPENAI_API_KEY.")
     return MegaladoNNTranslator(api_key=api_key, target_language=target_language)

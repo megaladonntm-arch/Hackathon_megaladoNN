@@ -1,6 +1,6 @@
 ﻿function ProblemSolution() {
   return (
-    <section className="split" id="problem">
+    <section className="split section section-problem" id="problem">
       <div className="section-head">
         <h2>Muammo → Yechim</h2>
         <p>O‘qish jarayonidagi asosiy muammo va bizning yechimimiz.</p>

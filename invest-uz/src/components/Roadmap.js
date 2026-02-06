@@ -1,26 +1,26 @@
-function Roadmap() {
+﻿function Roadmap() {
   return (
-    <section className="roadmap" id="roadmap">
+    <section className="roadmap section section-mvp" id="mvp">
       <div className="section-head">
-        <h2>Yo�l xaritasi</h2>
-        <p>UzTech Hackathon doirasida rivojlanish bosqichlari.</p>
+        <h2>MVP</h2>
+        <p>Minimal, lekin real qiymat beradigan funksiyalar to‘plami.</p>
       </div>
       <div className="roadmap-list">
         <div className="roadmap-item">
-          <span>Idea</span>
-          <p>Muammo tahlili va konsept.</p>
+          <span>3 ta rejim</span>
+          <p>Magnifier, Layer va Split-view bir joyda.</p>
         </div>
         <div className="roadmap-item">
-          <span>Prototype</span>
-          <p>Overlay oynasi va sinxronizatsiya.</p>
+          <span>Tez tarjima</span>
+          <p>Bir marta tarjima qilinadi, o‘qish davomida qayta ishlatiladi.</p>
         </div>
         <div className="roadmap-item">
-          <span>MVP</span>
-          <p>Minimal funksiyalar va UX testlari.</p>
+          <span>Overlay oynasi</span>
+          <p>Window API orqali yonma-oyna yoki ichki panel.</p>
         </div>
         <div className="roadmap-item">
-          <span>Launched</span>
-          <p>Real foydalanuvchilarda ishga tushirish.</p>
+          <span>Universal UX</span>
+          <p>O‘qish, ish va tadqiqot uchun bir xil oqim.</p>
         </div>
       </div>
     </section>
