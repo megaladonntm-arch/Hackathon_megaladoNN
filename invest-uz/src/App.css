@@ -575,9 +575,9 @@ a {
 
 .magnifier-lens {
   position: fixed;
-  width: 200px;
-  height: 200px;
-  padding: 22px;
+  width: 150px;
+  height: 150px;
+  padding: 16px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18), rgba(9, 14, 21, 0.78) 70%);
   border: 2px solid rgba(57, 211, 198, 0.55);
@@ -595,6 +595,17 @@ a {
 
 .magnifier-lens.show {
   opacity: 1;
+}
+
+.magnifier-lens::before {
+  content: '';
+  position: absolute;
+  inset: 18px;
+  background:
+    linear-gradient(90deg, transparent 49%, rgba(57, 211, 198, 0.6) 50%, transparent 51%),
+    linear-gradient(0deg, transparent 49%, rgba(57, 211, 198, 0.6) 50%, transparent 51%);
+  pointer-events: none;
+  opacity: 0.75;
 }
 
 .magnifier-lens::after {
@@ -623,6 +634,59 @@ a {
   font-size: 0.98rem;
   line-height: 1.35;
   opacity: 0.95;
+}
+
+.random-words {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(8, 12, 18, 0.7);
+  border: 1px solid var(--border);
+}
+
+.random-words-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.random-total {
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.random-words-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.random-words-controls input {
+  width: 120px;
+  background: rgba(8, 12, 18, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+}
+
+.random-words-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.random-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(57, 211, 198, 0.14);
+  border: 1px solid rgba(57, 211, 198, 0.35);
+  color: var(--text);
+  font-size: 0.85rem;
 }
 
 .overlay-mode,

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from M_app.M_Src_Backend.services.text_analyzer.ai_text_analyzer import MegaladoNNTranslator
+from M_app.M_Src_Backend.services.text_analyzer.text_random_words import get_random_words
 
 
 
@@ -31,6 +32,16 @@ class TranslateResponse(BaseModel):
     translated_text: str
     target_language: str
     model: str
+
+
+class RandomWordsRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=100000)
+    count: int = Field(ge=1, le=500)
+
+
+class RandomWordsResponse(BaseModel):
+    word_count: int
+    random_words: list[str]
 
 
 def build_translator(target_language: str) -> MegaladoNNTranslator:
@@ -65,6 +76,17 @@ def translate(payload: TranslateRequest) -> TranslateResponse:
         target_language=payload.target_language,
         model=translator.model,
     )
+
+
+@app.post("/api/random-words", response_model=RandomWordsResponse)
+def random_words(payload: RandomWordsRequest) -> RandomWordsResponse:
+    try:
+        word_count, words = get_random_words(payload.text, payload.count)
+    except Exception as exc:
+        logger.exception("Random words failed")
+        raise HTTPException(status_code=500, detail=f"Random words failed: {exc!r}") from exc
+
+    return RandomWordsResponse(word_count=word_count, random_words=words)
 
 if __name__ == "__main__":
     import uvicorn

@@ -30,6 +30,11 @@ function Demo() {
   const [translatedText, setTranslatedText] = useState('');
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+  const [randomCount, setRandomCount] = useState(5);
+  const [randomWords, setRandomWords] = useState([]);
+  const [randomTotal, setRandomTotal] = useState(0);
+  const [randomStatus, setRandomStatus] = useState('idle');
+  const [randomError, setRandomError] = useState('');
   const [lensState, setLensState] = useState({
     x: 0,
     y: 0,
@@ -81,6 +86,36 @@ function Demo() {
       setError(err.message || 'Translation failed.');
     }
   }, [canTranslate, inputText, targetLang, translateText]);
+
+  const handleRandomWords = useCallback(async () => {
+    if (!translatedText.trim()) {
+      setRandomError('Сначала получите перевод.');
+      setRandomWords([]);
+      setRandomTotal(0);
+      return;
+    }
+    setRandomStatus('loading');
+    setRandomError('');
+    try {
+      const response = await fetch(`${API_BASE}/api/random-words`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: translatedText, count: Number(randomCount) || 1 })
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const message = payload.detail || 'Не удалось получить случайные слова.';
+        throw new Error(message);
+      }
+      const data = await response.json();
+      setRandomWords(data.random_words || []);
+      setRandomTotal(data.word_count || 0);
+      setRandomStatus('success');
+    } catch (err) {
+      setRandomStatus('error');
+      setRandomError(err.message || 'Ошибка запроса.');
+    }
+  }, [randomCount, translatedText]);
 
   const updateLens = useCallback(
     (event) => {
@@ -156,11 +191,43 @@ function Demo() {
               setStatus('idle');
               setError('');
               setLensState((prev) => ({ ...prev, visible: false, word: '', text: '' }));
+              setRandomWords([]);
+              setRandomTotal(0);
+              setRandomStatus('idle');
+              setRandomError('');
             }}
           >
             Очистить
           </button>
           {error && <span className="error-text">{error}</span>}
+        </div>
+        <div className="random-words">
+          <div className="random-words-head">
+            <p className="muted">Случайные слова из перевода</p>
+            {randomTotal > 0 && (
+              <span className="random-total">Всего слов: {randomTotal}</span>
+            )}
+          </div>
+          <div className="random-words-controls">
+            <input
+              type="number"
+              min="1"
+              max="500"
+              value={randomCount}
+              onChange={(event) => setRandomCount(event.target.value)}
+            />
+            <button className="ghost-btn" onClick={handleRandomWords} disabled={randomStatus === 'loading'}>
+              {randomStatus === 'loading' ? 'Считаю...' : 'Показать слова'}
+            </button>
+            {randomError && <span className="error-text">{randomError}</span>}
+          </div>
+          <div className="random-words-list">
+            {(randomWords.length ? randomWords : ['Нет данных']).map((word, index) => (
+              <span key={`${word}-${index}`} className="random-chip">
+                {word}
+              </span>
+            ))}
+          </div>
         </div>
         <div className="mode-switch">
           <button
