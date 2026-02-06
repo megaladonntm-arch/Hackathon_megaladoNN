@@ -1,10 +1,10 @@
-import logging
+﻿import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from M_Src_Backend.services.ai_text_analyzer import MegaladoNNTranslator
+from M_app.M_Src_Backend.services.text_analyzer.ai_translator import MegaladoNNTranslator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("translator")
@@ -16,12 +16,12 @@ app.add_middleware(
     allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"],#api_key
 )
 
 
 class TranslateRequest(BaseModel):
-    text: str = Field(min_length=1, max_length=12000)
+    text: str = Field(min_length=1, max_length=100000)
     target_language: str = Field(min_length=2, max_length=32)
 
 
@@ -32,7 +32,7 @@ class TranslateResponse(BaseModel):
 
 
 def build_translator(target_language: str) -> MegaladoNNTranslator:
-    api_key = ""
+    api_key = "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"
     model = "tngtech/deepseek-r1t2-chimera:free"
     base_url = "https://openrouter.ai/api/v1"
     return MegaladoNNTranslator(
