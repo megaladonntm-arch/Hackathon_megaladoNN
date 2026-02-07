@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import Demo from './components/Demo';
+import AiHelperWidget from './components/AiHelperWidget';
 import './App.css';
 
 const navItems = [
@@ -17,7 +18,7 @@ function App() {
             <div className="brand-mark">RO</div>
             <div>
               <p className="brand-title">Reader-Overlay Kids</p>
-              <p className="brand-subtitle">8-16 yosh uchun quvnoq o‘qish yordamchisi</p>
+              <p className="brand-subtitle">8-16 yosh uchun quvnoq o???qish yordamchisi</p>
             </div>
           </div>
           <nav className="nav">
@@ -34,7 +35,7 @@ function App() {
               MVP
             </a>
             <a className="nav-link" href="/#problem">
-              Muammo → Yechim
+              Muammo ??? Yechim
             </a>
             <a className="nav-link" href="/#why">
               Nega Biz?
@@ -44,6 +45,7 @@ function App() {
             </a>
           </nav>
         </header>
+        <AiHelperWidget />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/demo" element={<Demo />} />
