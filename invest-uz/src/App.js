@@ -2,14 +2,25 @@ import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import Demo from './components/Demo';
 import AiHelperWidget from './components/AiHelperWidget';
+import AuthPage from './components/AuthPage';
+import ProfilePage from './components/ProfilePage';
+import TodoPage from './components/TodoPage';
+import ChatPage from './components/ChatPage';
+import { useAuth } from './AuthContext';
 import './App.css';
 
 const navItems = [
   { path: '/', label: 'Bosh sahifa' },
-  { path: '/demo', label: 'Demo' }
+  { path: '/demo', label: 'Demo' },
+  { path: '/auth', label: 'Kirish' },
+  { path: '/profile', label: 'Profil' },
+  { path: '/todos', label: 'To Do' },
+  { path: '/chat', label: 'Chat' }
 ];
 
 function App() {
+  const { isAuthed, logout } = useAuth();
+
   return (
     <BrowserRouter>
       <div className="app">
@@ -43,12 +54,21 @@ function App() {
             <a className="nav-link" href="https://github.com/megaladonntm-arch" target="_blank" rel="noreferrer">
               GitHub
             </a>
+            {isAuthed ? (
+              <button className="nav-link nav-logout" onClick={logout}>
+                Chiqish
+              </button>
+            ) : null}
           </nav>
         </header>
         <AiHelperWidget />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/demo" element={<Demo />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/todos" element={<TodoPage />} />
+          <Route path="/chat" element={<ChatPage />} />
           <Route path="*" element={<LandingPage />} />
         </Routes>
       </div>

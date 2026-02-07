@@ -1,17 +1,23 @@
 from __future__ import annotations
 
 from typing import Any, Iterable
+import hashlib
+import secrets
+from datetime import datetime, timedelta
 
 from sqlalchemy import select, update, delete, func
 from sqlalchemy.orm import Session
 
 from .models import (
     ActivityLog,
+    ChatMessage,
     ReadingMetrics,
     Text,
     TextAnalysis,
+    TodoItem,
     Translation,
     User,
+    UserSession,
 )
 
 
@@ -21,10 +27,14 @@ def create_user(
     *,
     username: str,
     email: str | None = None,
-    role: str = "student",
+    role: str = "user",
     level: int = 1,
     xp: int = 0,
     interests: list[str] | None = None,
+    display_name: str | None = None,
+    bio: str | None = None,
+    password_hash: str = "",
+    password_salt: str = "",
     is_active: bool = True,
 ) -> User:
     user = User(
@@ -34,6 +44,10 @@ def create_user(
         level=level,
         xp=xp,
         interests=interests or [],
+        display_name=display_name,
+        bio=bio,
+        password_hash=password_hash,
+        password_salt=password_salt,
         is_active=is_active,
     )
     db.add(user)
@@ -56,6 +70,44 @@ def get_all_users(db: Session, *, limit: int = 100, offset: int = 0) -> list[Use
     return list(db.execute(stmt).scalars().all())
 
 
+def hash_password(password: str, *, salt: str | None = None) -> tuple[str, str]:
+    if salt is None:
+        salt = secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt.encode("utf-8"),
+        120_000,
+    )
+    return salt, digest.hex()
+
+
+def verify_password(password: str, *, salt: str, password_hash: str) -> bool:
+    _, digest = hash_password(password, salt=salt)
+    return secrets.compare_digest(digest, password_hash)
+
+
+def create_user_with_password(
+    db: Session,
+    *,
+    username: str,
+    password: str,
+    email: str | None = None,
+    role: str = "user",
+    display_name: str | None = None,
+) -> User:
+    salt, password_hash = hash_password(password)
+    return create_user(
+        db,
+        username=username,
+        email=email,
+        role=role,
+        display_name=display_name,
+        password_hash=password_hash,
+        password_salt=salt,
+    )
+
+
 def update_user(db: Session, user_id: int, data: dict[str, Any]) -> User | None:
     if not data:
         return get_user(db, user_id)
@@ -69,6 +121,29 @@ def update_user(db: Session, user_id: int, data: dict[str, Any]) -> User | None:
 
 def delete_user(db: Session, user_id: int) -> bool:
     stmt = delete(User).where(User.id == user_id)
+    result = db.execute(stmt)
+    db.commit()
+    return result.rowcount > 0
+
+
+def create_session(db: Session, user_id: int, *, days: int = 7) -> UserSession:
+    token = secrets.token_urlsafe(32)
+    now = datetime.utcnow()
+    expires = now + timedelta(days=days)
+    session = UserSession(user_id=user_id, token=token, expires_at=expires)
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+    return session
+
+
+def get_session_by_token(db: Session, token: str) -> UserSession | None:
+    stmt = select(UserSession).where(UserSession.token == token)
+    return db.execute(stmt).scalar_one_or_none()
+
+
+def revoke_session(db: Session, token: str) -> bool:
+    stmt = update(UserSession).where(UserSession.token == token).values(revoked=True)
     result = db.execute(stmt)
     db.commit()
     return result.rowcount > 0
@@ -329,3 +404,54 @@ def watch_user(
 def count_users(db: Session) -> int:
     stmt = select(func.count(User.id))
     return int(db.execute(stmt).scalar_one() or 0)
+
+
+def create_todo(db: Session, *, user_id: int, title: str) -> TodoItem:
+    todo = TodoItem(user_id=user_id, title=title)
+    db.add(todo)
+    db.commit()
+    db.refresh(todo)
+    return todo
+
+
+def get_todos_by_user(db: Session, user_id: int) -> list[TodoItem]:
+    stmt = select(TodoItem).where(TodoItem.user_id == user_id).order_by(TodoItem.id.desc())
+    return list(db.execute(stmt).scalars().all())
+
+
+def update_todo(db: Session, todo_id: int, data: dict[str, Any]) -> TodoItem | None:
+    if not data:
+        return db.get(TodoItem, todo_id)
+    stmt = update(TodoItem).where(TodoItem.id == todo_id).values(**data).returning(TodoItem)
+    result = db.execute(stmt).scalar_one_or_none()
+    if result is None:
+        return None
+    db.commit()
+    return result
+
+
+def delete_todo(db: Session, todo_id: int) -> bool:
+    stmt = delete(TodoItem).where(TodoItem.id == todo_id)
+    result = db.execute(stmt)
+    db.commit()
+    return result.rowcount > 0
+
+
+def create_chat_message(db: Session, *, user_id: int, message: str) -> ChatMessage:
+    msg = ChatMessage(user_id=user_id, message=message)
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    return msg
+
+
+def get_recent_chat_messages(db: Session, *, limit: int = 100) -> list[ChatMessage]:
+    stmt = select(ChatMessage).order_by(ChatMessage.created_at.desc()).limit(limit)
+    return list(db.execute(stmt).scalars().all())
+
+
+def delete_chat_message(db: Session, message_id: int) -> bool:
+    stmt = delete(ChatMessage).where(ChatMessage.id == message_id)
+    result = db.execute(stmt)
+    db.commit()
+    return result.rowcount > 0

@@ -113,15 +113,17 @@ function AiHelperWidget() {
   return (
     <div className={open ? 'ai-helper open' : 'ai-helper'}>
       <div className="ai-helper-anchor">
-        <button
-          type="button"
-          className="ai-bubble"
-          onClick={() => setOpen((prev) => !prev)}
-          aria-expanded={open}
-        >
-          AI
-        </button>
-        <div className="ai-fact">{currentFact}</div>
+        <div className="ai-plaque">
+          <button
+            type="button"
+            className="ai-bubble"
+            onClick={() => setOpen((prev) => !prev)}
+            aria-expanded={open}
+          >
+            AI
+          </button>
+          <div className="ai-fact">{currentFact}</div>
+        </div>
       </div>
 
       {open && (

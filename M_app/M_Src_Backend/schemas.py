@@ -9,10 +9,12 @@ from pydantic import BaseModel, Field
 class UserBase(BaseModel):
     username: str = Field(min_length=2, max_length=50)
     email: str | None = None
-    role: str = "student"
+    role: str = "user"
     level: int = 1
     xp: int = 0
     interests: list[str] = Field(default_factory=list)
+    display_name: str | None = None
+    bio: str | None = None
     is_active: bool = True
 
 
@@ -27,6 +29,8 @@ class UserUpdate(BaseModel):
     level: int | None = None
     xp: int | None = None
     interests: list[str] | None = None
+    display_name: str | None = None
+    bio: str | None = None
     is_active: bool | None = None
 
 
@@ -130,3 +134,58 @@ class ActivityLogOut(ActivityLogCreate):
 
     class Config:
         from_attributes = True
+
+
+class UserRegister(BaseModel):
+    username: str = Field(min_length=2, max_length=50)
+    password: str = Field(min_length=6, max_length=128)
+    email: str | None = None
+    display_name: str | None = None
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class AuthResponse(BaseModel):
+    token: str
+    user: UserOut
+
+
+class TodoCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+
+
+class TodoUpdate(BaseModel):
+    title: str | None = None
+    is_done: bool | None = None
+
+
+class TodoOut(BaseModel):
+    id: int
+    user_id: int
+    title: str
+    is_done: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ChatMessageCreate(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
+
+
+class ChatMessageOut(BaseModel):
+    id: int
+    user_id: int
+    username: str
+    message: str
+    created_at: datetime
+
+
+class ProfileUpdate(BaseModel):
+    display_name: str | None = None
+    bio: str | None = None
+    interests: list[str] | None = None
