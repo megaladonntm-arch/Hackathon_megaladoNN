@@ -59,6 +59,9 @@ class User(Base):
     activity_logs: Mapped[list["ActivityLog"]] = relationship(
         "ActivityLog", back_populates="user", cascade="all, delete-orphan"
     )
+    request_logs: Mapped[list["RequestLog"]] = relationship(
+        "RequestLog", back_populates="user", cascade="all, delete-orphan"
+    )
     todos: Mapped[list["TodoItem"]] = relationship(
         "TodoItem", back_populates="user", cascade="all, delete-orphan"
     )
@@ -169,6 +172,25 @@ class ActivityLog(Base):
     )
 
     user: Mapped["User"] = relationship("User", back_populates="activity_logs")
+
+
+class RequestLog(Base):
+    __tablename__ = "request_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    method: Mapped[str] = mapped_column(String(12), nullable=False)
+    path: Mapped[str] = mapped_column(String(255), nullable=False)
+    status_code: Mapped[int] = mapped_column(Integer, nullable=False)
+    ip: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    user_agent: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    duration_ms: Mapped[float] = mapped_column(nullable=False, default=0.0)
+    details: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+
+    user: Mapped["User"] = relationship("User", back_populates="request_logs")
 
 
 class TodoItem(Base):

@@ -1,6 +1,8 @@
-﻿import logging
+import logging
 import os
 from datetime import datetime
+from functools import lru_cache
+import time
 
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,11 +23,45 @@ app = FastAPI(title="Reader-Overlay API", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000","https://krystle-dressiest-prejudgementally.ngrok-free.dev" ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def request_logger(request, call_next):
+    start = time.perf_counter()
+    status_code = 500
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        return response
+    finally:
+        duration_ms = (time.perf_counter() - start) * 1000
+        try:
+            authorization = request.headers.get("authorization")
+            token = _get_token_from_header(authorization)
+            user_id = None
+            with db_session() as db:
+                if token:
+                    session = cruds.get_session_by_token(db, token)
+                    if session and not session.revoked and session.expires_at >= datetime.utcnow():
+                        user_id = session.user_id
+                cruds.create_request_log(
+                    db,
+                    user_id=user_id,
+                    method=request.method,
+                    path=request.url.path,
+                    status_code=int(status_code),
+                    ip=request.client.host if request.client else None,
+                    user_agent=request.headers.get("user-agent"),
+                    duration_ms=duration_ms,
+                    details={"query": str(request.url.query) if request.url.query else ""},
+                )
+        except Exception:
+            logger.exception("Request logging failed")
 
 
 class TranslateRequest(BaseModel):
@@ -40,7 +76,7 @@ class TranslateResponse(BaseModel):
 
 
 class RandomWordsRequest(BaseModel):
-    text: str = Field(min_length=1, max_length=100000)
+    text: str = Field(min_length=1, max_length=100000)#api_key
     count: int = Field(ge=1, le=500)
 
 
@@ -59,7 +95,9 @@ class AssistantResponse(BaseModel):
 
 
 def build_translator(target_language: str) -> MegaladoNNTranslator:
-    api_key = os.getenv("OPENROUTER_API_KEY", "")
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENROUTER_API_KEY is required")
     model = os.getenv("TRANSLATION_MODEL", "tngtech/deepseek-r1t2-chimera:free")
     base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     return MegaladoNNTranslator(
@@ -70,8 +108,15 @@ def build_translator(target_language: str) -> MegaladoNNTranslator:
     )
 
 
+@lru_cache(maxsize=64)
+def get_translator(target_language: str) -> MegaladoNNTranslator:
+    return build_translator(target_language)
+
+
 def build_ai_helper() -> MegaladoNNAIHelper:
-    api_key = os.getenv("OPENROUTER_API_KEY", "")
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENROUTER_API_KEY is required")
     model = os.getenv("AI_HELPER_MODEL", "tngtech/deepseek-r1t2-chimera:free")
     base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     return MegaladoNNAIHelper(
@@ -79,6 +124,11 @@ def build_ai_helper() -> MegaladoNNAIHelper:
         model=model,
         base_url=base_url,
     )
+
+
+@lru_cache(maxsize=1)
+def get_ai_helper() -> MegaladoNNAIHelper:
+    return build_ai_helper()
 
 
 def get_current_user(
@@ -384,7 +434,7 @@ def translate(
     db=Depends(get_db),
 ) -> TranslateResponse:
     try:
-        translator = build_translator(payload.target_language)
+        translator = get_translator(payload.target_language)
         translated = translator.translate(payload.text)
     except Exception as exc:
         logger.exception("Translation failed")
@@ -429,7 +479,7 @@ def random_words(payload: RandomWordsRequest) -> RandomWordsResponse:
 @app.post("/api/assistant", response_model=AssistantResponse)
 def assistant(payload: AssistantRequest) -> AssistantResponse:
     try:
-        helper = build_ai_helper()
+        helper = get_ai_helper()
         answer = helper.chat(payload.message)
     except Exception as exc:
         logger.exception("AI helper failed")
@@ -441,4 +491,7 @@ def assistant(payload: AssistantRequest) -> AssistantResponse:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+

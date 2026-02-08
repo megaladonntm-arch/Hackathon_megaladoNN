@@ -12,6 +12,7 @@ from .models import (
     ActivityLog,
     ChatMessage,
     ReadingMetrics,
+    RequestLog,
     Text,
     TextAnalysis,
     TodoItem,
@@ -147,6 +148,18 @@ def revoke_session(db: Session, token: str) -> bool:
     result = db.execute(stmt)
     db.commit()
     return result.rowcount > 0
+
+
+def get_sessions_by_user(db: Session, user_id: int) -> list[UserSession]:
+    stmt = select(UserSession).where(UserSession.user_id == user_id).order_by(UserSession.id.desc())
+    return list(db.execute(stmt).scalars().all())
+
+
+def revoke_sessions_by_user(db: Session, user_id: int) -> int:
+    stmt = update(UserSession).where(UserSession.user_id == user_id).values(revoked=True)
+    result = db.execute(stmt)
+    db.commit()
+    return int(result.rowcount or 0)
 
 
 # Texts
@@ -399,6 +412,71 @@ def watch_user(
         details={"reason": reason, "tags": tags or {}},
         points_delta=0,
     )
+
+
+def create_request_log(
+    db: Session,
+    *,
+    user_id: int | None,
+    method: str,
+    path: str,
+    status_code: int,
+    ip: str | None = None,
+    user_agent: str | None = None,
+    duration_ms: float = 0.0,
+    details: dict[str, Any] | None = None,
+) -> RequestLog:
+    log = RequestLog(
+        user_id=user_id,
+        method=method,
+        path=path,
+        status_code=status_code,
+        ip=ip,
+        user_agent=user_agent,
+        duration_ms=duration_ms,
+        details=details or {},
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+    return log
+
+
+def get_activity_logs(
+    db: Session,
+    *,
+    limit: int = 200,
+    offset: int = 0,
+    user_id: int | None = None,
+) -> list[ActivityLog]:
+    stmt = select(ActivityLog).order_by(ActivityLog.created_at.desc())
+    if user_id is not None:
+        stmt = stmt.where(ActivityLog.user_id == user_id)
+    stmt = stmt.limit(limit).offset(offset)
+    return list(db.execute(stmt).scalars().all())
+
+
+def get_request_logs(
+    db: Session,
+    *,
+    limit: int = 200,
+    offset: int = 0,
+    user_id: int | None = None,
+    method: str | None = None,
+    path: str | None = None,
+    since_id: int | None = None,
+) -> list[RequestLog]:
+    stmt = select(RequestLog).order_by(RequestLog.created_at.desc())
+    if user_id is not None:
+        stmt = stmt.where(RequestLog.user_id == user_id)
+    if method:
+        stmt = stmt.where(RequestLog.method == method)
+    if path:
+        stmt = stmt.where(RequestLog.path == path)
+    if since_id is not None:
+        stmt = stmt.where(RequestLog.id > since_id)
+    stmt = stmt.limit(limit).offset(offset)
+    return list(db.execute(stmt).scalars().all())
 
 
 def count_users(db: Session) -> int:
