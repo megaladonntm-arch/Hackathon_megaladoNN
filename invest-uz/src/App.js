@@ -6,6 +6,7 @@ import AuthPage from './components/AuthPage';
 import ProfilePage from './components/ProfilePage';
 import TodoPage from './components/TodoPage';
 import ChatPage from './components/ChatPage';
+import ThemeSwitcher from './components/ThemeSwitcher';
 import { useAuth } from './AuthContext';
 import './App.css';
 
@@ -46,7 +47,7 @@ function App() {
               MVP
             </a>
             <a className="nav-link" href="/#problem">
-              Muammo ??? Yechim
+              Muammo - Yechim
             </a>
             <a className="nav-link" href="/#why">
               Nega Biz?
@@ -54,6 +55,7 @@ function App() {
             <a className="nav-link" href="https://github.com/megaladonntm-arch" target="_blank" rel="noreferrer">
               GitHub
             </a>
+            <ThemeSwitcher />
             {isAuthed ? (
               <button className="nav-link nav-logout" onClick={logout}>
                 Chiqish

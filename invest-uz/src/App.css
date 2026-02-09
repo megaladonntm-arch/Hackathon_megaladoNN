@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&family=Fredoka:wght@400;600;700&display=swap');
 
+/* Default Light Theme */
+:root[data-theme="light"],
 :root {
   --bg: #fff2d9;
   --bg-alt: #f8e4ff;
@@ -14,6 +16,57 @@
   --shadow: 0 18px 40px rgba(27, 20, 51, 0.2);
   --yellow: #ffe97a;
   --pink: #ffb4d9;
+}
+
+/* Dark Theme */
+:root[data-theme="dark"] {
+  --bg: #0d0b17;
+  --bg-alt: #1a1428;
+  --panel: rgba(20, 15, 35, 0.92);
+  --panel-strong: rgba(25, 18, 45, 0.98);
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #f5f1ff;
+  --muted: rgba(245, 241, 255, 0.6);
+  --accent: #ff7a59;
+  --accent-2: #5b8dff;
+  --accent-3: #3ccf91;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+  --yellow: #ffe97a;
+  --pink: #ffb4d9;
+}
+
+/* Blue Theme */
+:root[data-theme="blue"] {
+  --bg: #e3f2fd;
+  --bg-alt: #f3e5f5;
+  --panel: rgba(255, 255, 255, 0.94);
+  --panel-strong: rgba(255, 255, 255, 0.99);
+  --border: rgba(25, 70, 130, 0.12);
+  --text: #1a237e;
+  --muted: rgba(26, 35, 126, 0.7);
+  --accent: #1976d2;
+  --accent-2: #7c4dff;
+  --accent-3: #00bcd4;
+  --shadow: 0 18px 40px rgba(25, 70, 130, 0.15);
+  --yellow: #ffd54f;
+  --pink: #f48fb1;
+}
+
+/* Sunset Theme */
+:root[data-theme="sunset"] {
+  --bg: #fff3e0;
+  --bg-alt: #ffe0b2;
+  --panel: rgba(255, 255, 255, 0.93);
+  --panel-strong: rgba(255, 255, 255, 0.98);
+  --border: rgba(230, 124, 115, 0.15);
+  --text: #bf360c;
+  --muted: rgba(191, 54, 12, 0.65);
+  --accent: #ff6f00;
+  --accent-2: #ff5722;
+  --accent-3: #ff9100;
+  --shadow: 0 18px 40px rgba(255, 87, 34, 0.2);
+  --yellow: #ffb300;
+  --pink: #ff7043;
 }
 
 * {
@@ -1259,4 +1312,224 @@ a {
   background: rgba(255, 122, 89, 0.15);
   border: 2px dashed rgba(255, 122, 89, 0.45);
   cursor: pointer;
+}
+/* ========== Competition Section Styles ========== */
+
+.competition-section {
+  background: linear-gradient(135deg, rgba(255, 122, 89, 0.08) 0%, rgba(91, 141, 255, 0.08) 100%);
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-header .eyebrow {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.section-header h2 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: var(--muted);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Competition Grid */
+.competition-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 28px;
+  margin-bottom: 50px;
+}
+
+.competition-card {
+  background: var(--panel-strong);
+  border: 2px solid var(--border);
+  border-radius: 24px;
+  padding: 32px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.competition-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--accent);
+  box-shadow: 0 24px 48px rgba(255, 122, 89, 0.2);
+}
+
+.card-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.competition-card h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.competition-card p {
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 2px dashed var(--border);
+}
+
+.feature-list li {
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* MVP Info Box */
+.mvp-info-box {
+  background: linear-gradient(135deg, rgba(255, 180, 217, 0.25) 0%, rgba(91, 141, 255, 0.25) 100%);
+  border: 2px solid rgba(255, 122, 89, 0.3);
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.mvp-info-box h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.mvp-info-box p {
+  font-size: 1rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mvp-timeline {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.timeline-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.timeline-badge {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  color: white;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.timeline-text {
+  font-size: 0.95rem;
+  color: var(--text);
+  font-weight: 500;
+  text-align: center;
+  max-width: 150px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .section-header h2 {
+    font-size: 2rem;
+  }
+
+  .competition-grid {
+    gap: 20px;
+  }
+
+  .competition-card {
+    padding: 24px;
+  }
+
+  .mvp-timeline {
+    gap: 20px;
+    flex-direction: column;
+  }
+
+  .mvp-info-box {
+    padding: 28px;
+  }
+}
+
+/* ========== Theme Switcher ========== */
+
+.theme-switcher {
+  margin: 0 16px;
+}
+
+.theme-select {
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-select:hover {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.theme-select:focus {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
 }
