@@ -1,92 +1,79 @@
-# Reader-Overlay Kids - Hackathon Project
+# Reader-Overlay Kids - Хакатон Лойиҳаси
 
-Платформа для облегченного чтения на иностранных языках с интерактивным переводом и анализом текста.
+Чет тилларида матнни ўқиш учун интерактив таржима ва текст анализ платформаси.
 
-## Структура проекта
+## Лойиҳа структураси
 
 ```
 Hackathon_megaladoNN/
 ├── main.py                 # FastAPI backend
-├── requirements.txt        # Python dependencies
-├── .env                    # Environment variables (ЗАПОЛНИ!)
-├── .env.example           # Template for .env
+├── requirements.txt        # Python зависимости
+├── .env                    # Муҳит ўзгарувчилари (ТҚ ТА!)
+├── .env.example           # .env намунаси
 ├── invest-uz/             # React frontend
-│   ├── .env               # React env variables
-│   ├── .env.example       # React env template
+│   ├── .env               # React муҳит ўзгарувчилари
+│   ├── .env.example       # React .env намунаси
 │   └── src/
-│       ├── components/    # React components
-│       ├── App.js         # Main app
-│       └── ThemeContext.js # Theme management
-└── M_app/                 # Backend services
+│       ├── components/    # React компонентлари
+│       ├── App.js         # Асосий илова
+│       └── ThemeContext.js # Тема бошқаруви
+└── M_app/                 # Backend сервисları
     └── M_Src_Backend/
-        ├── services/      # AI, translation, text analysis
-        ├── models.py      # Database models
-        ├── schemas.py     # Pydantic schemas
-        └── cruds.py       # Database operations
+        ├── services/      # AI, таржима, текст анализ
+        ├── models.py      # БД моделлари
+        ├── schemas.py     # Pydantic схемалари
+        └── cruds.py       # БД операциялари
 ```
 
-## Быстрый старт
+## Тез Қўлланиш
 
-### 1. Настройка Backend (Python)
+### 1. Backend Ўрнатиш (Python)
 
 ```bash
-# Установить зависимости
 pip install -r requirements.txt
 
-# Создать .env файл (ОБЯЗАТЕЛЬНО!)
 cp .env.example .env
 
-# Отредактировать .env - вставить API ключ:
+# .env файлни таҳрир қилинг - API калитини қўйинг:
 # OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx
 
-# Запустить сервер
 python -m uvicorn main:app --reload
 ```
 
-Backend будет доступен на `http://localhost:8000`
+Backend `http://localhost:8000` манзилида мавжуд бўлади
 
-### 2. Настройка Frontend (React)
+### 2. Frontend Ўрнатиш (React)
 
 ```bash
 cd invest-uz
 
-# Установить зависимости
 npm install
 
-# Создать .env файл
 cp .env.example .env
-# (Обычно REACT_APP_API_BASE=http://localhost:8000 уже там)
 
-# Запустить dev сервер
 npm start
 ```
 
-Frontend будет доступен на `http://localhost:3000`
+Frontend `http://localhost:3000` манзилида мавжуд бўлади
 
-## Переменные окружения
+## Муҳит ўзгарувчилари
 
 ### Backend (.env)
 
 ```env
-# OpenRouter API (ОБЯЗАТЕЛЬНО заполни!)
-OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxx
+OWN_API = xxxxxxx
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 
-# AI Models
 TRANSLATION_MODEL=tngtech/deepseek-r1t2-chimera:free
 AI_HELPER_MODEL=tngtech/deepseek-r1t2-chimera:free
 
-# Database
 DATABASE_URL=sqlite:///./readers.db
 
-# Admin account
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 
-# CORS (для фронтенда)
 ALLOWED_ORIGINS=["http://localhost:3000"]
 
-# Debug mode
 DEBUG=True
 ```
 
@@ -96,64 +83,64 @@ DEBUG=True
 REACT_APP_API_BASE=http://localhost:8000
 ```
 
-## Основные фичи
+## Асосий хусусиятлари
 
-✅ **Перевод текстов** - Overlay, Magnifier и Split режимы
-✅ **Много языков** - EN, RU, UZ, TR, DE, FR, ES и др.
-✅ **Анализ текста** - Выделение случайных слов для обучения
-✅ **AI Помощник** - ChatBot на базе DeepSeek
-✅ **Аутентификация** - JWT-based система
-✅ **Профиль пользователя** - История, статистика
-✅ **4 Темы оформления** - Light, Dark, Blue, Sunset
-⚙️ **Система рангов** - MVP (только на фронтенде пока)
+✅ **Матнни таржима қилиш** - Overlay, Magnifier ва Split режимлари
+✅ **Кўп тиллар** - EN, RU, UZ, TR, DE, FR, ES ва бошқа
+✅ **Текст анализ** - Ўқиш учун сўзларни ажратиб олиш
+✅ **AI Ёрдамчи** - DeepSeek асосидаги ChatBot
+✅ **Аутентификация** - JWT-асосидаги система
+✅ **Фойдаланувчи профили** - Тарихи, статистика
+✅ **4 та Дизайн темаси** - Light, Dark, Blue, Sunset
+⚙️ **Рейтинг системаси** - MVP (шу деми фронтенда эса)
 
-## API Endpoints
+## API Нуқталари
 
-### Auth (без токена)
-- `POST /api/auth/register` - Регистрация
-- `POST /api/auth/login` - Вход
-- `GET /api/health` - Проверка сервера
+### Auth (токен сарф қилмасдан)
+- `POST /api/auth/register` - Рўйхатдан ўтиш
+- `POST /api/auth/login` - Кириш
+- `GET /api/health` - Сервер tekшируви
 
-### User (требует токена в header: `Authorization: Bearer {token}`)
-- `GET /api/me` - Get current user
-- `PUT /api/me` - Update profile
-- `GET /api/me/texts` - User texts
-- `GET /api/me/translations` - User translations
+### User (header орқали токен керак: `Authorization: Bearer {token}`)
+- `GET /api/me` - Жорий фойдаланувчинипи олиш
+- `PUT /api/me` - Профилни янгилаш
+- `GET /api/me/texts` - Фойдаланувчининг матнлари
+- `GET /api/me/translations` - Фойдаланувчининг таржималари
 
-### Tools (требует токена)
-- `POST /api/translate` - Перевод текста
-- `POST /api/random-words` - Случайные слова
-- `POST /api/assistant` - AI chat
+### Tools (токен керак)
+- `POST /api/translate` - Матнни таржима қилиш
+- `POST /api/random-words` - Сўзларни танлаш
+- `POST /api/assistant` - AI чат
 
-Полная документация: `http://localhost:8000/docs`
+Тўлиқ ҳужжатлар: `http://localhost:8000/docs`
 
-## Технологический стек
+## Технологик стек
 
 **Frontend:**
 - React 19
 - React Router 7
-- CSS3 с переменными и gradients
-- Context API для управления состоянием
+- CSS3 ўзгарувчилари ва gradients
+- Context API ҳолати бошқаруви учун
 
 **Backend:**
 - FastAPI
 - SQLAlchemy + SQLite
 - OpenRouter API (DeepSeek AI)
-- JWT для аутентификации
+- JWT аутентификация
 
-## Важно перед демо
+## Демо ҳамда мҳим
 
-1. **ЗАПОЛНИТЬ .env** - Без API ключа не будет работать перевод и AI
-2. **Проверить CORS** - Фронт и бэк на разных портах
-3. **Установить зависимости** - `pip install -r requirements.txt`
-4. **Запустить оба сервера**:
+1. **.env ТҚ ТА'** - API калитисиз таржима ва AI ишламайди
+2. **CORS текширинг** - Frontend ва backend турли портлардан
+3. **Зависимоталарни ўрнатинг** - `pip install -r requirements.txt`
+4. **Икки сервернипи ишга туширинг**:
    - Backend: `python -m uvicorn main:app --reload`
-   - Frontend: `npm start` (из папки invest-uz/)
+   - Frontend: `npm start` (invest-uz папкасидан)
 
-## Контакты
+## Контактлар
 
 GitHub: https://github.com/megaladonntm-arch
 
 ---
 
-**Status:** MVP версия для хакатона 🚀
+**Ҳолати:** MVP версия хакатон учун 🚀

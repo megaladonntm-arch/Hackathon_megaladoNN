@@ -1309,7 +1309,6 @@ a {
   border: 2px dashed rgba(255, 122, 89, 0.45);
   cursor: pointer;
 }
-/* ========== Competition Section Styles ========== */
 
 .competition-section {
   background: linear-gradient(135deg, rgba(255, 122, 89, 0.08) 0%, rgba(91, 141, 255, 0.08) 100%);
@@ -1348,7 +1347,6 @@ a {
   line-height: 1.6;
 }
 
-/* Competition Grid */
 .competition-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -1407,7 +1405,6 @@ a {
   font-weight: 500;
 }
 
-/* MVP Info Box */
 .mvp-info-box {
   background: linear-gradient(135deg, rgba(255, 180, 217, 0.25) 0%, rgba(91, 141, 255, 0.25) 100%);
   border: 2px solid rgba(255, 122, 89, 0.3);
@@ -1465,7 +1462,6 @@ a {
   max-width: 150px;
 }
 
-/* Animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -1477,7 +1473,6 @@ a {
   }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .section-header h2 {
     font-size: 2rem;
@@ -1500,8 +1495,6 @@ a {
     padding: 28px;
   }
 }
-
-/* ========== Theme Switcher ========== */
 
 .theme-switcher {
   margin: 0 16px;
