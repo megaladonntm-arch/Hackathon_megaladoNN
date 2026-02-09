@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&family=Fredoka:wght@400;600;700&display=swap');
 
-/* Default Light Theme */
 :root[data-theme="light"],
 :root {
   --bg: #fff2d9;
@@ -18,7 +17,6 @@
   --pink: #ffb4d9;
 }
 
-/* Dark Theme */
 :root[data-theme="dark"] {
   --bg: #0d0b17;
   --bg-alt: #1a1428;
@@ -35,7 +33,6 @@
   --pink: #ffb4d9;
 }
 
-/* Blue Theme */
 :root[data-theme="blue"] {
   --bg: #e3f2fd;
   --bg-alt: #f3e5f5;
@@ -52,7 +49,6 @@
   --pink: #f48fb1;
 }
 
-/* Sunset Theme */
 :root[data-theme="sunset"] {
   --bg: #fff3e0;
   --bg-alt: #ffe0b2;

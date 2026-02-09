@@ -22,7 +22,6 @@ from .models import (
 )
 
 
-# Users
 def create_user(
     db: Session,
     *,
@@ -199,7 +198,6 @@ def get_texts_by_user(db: Session, user_id: int, *, limit: int = 100, offset: in
     return list(db.execute(stmt).scalars().all())
 
 
-# Translations
 def create_translation(
     db: Session,
     *,
@@ -235,7 +233,6 @@ def get_translations_by_user(
     return list(db.execute(stmt).scalars().all())
 
 
-# Analysis
 def create_text_analysis(
     db: Session,
     *,
@@ -303,7 +300,6 @@ def get_analyses_by_user(
     return list(db.execute(stmt).scalars().all())
 
 
-# Activity / dev controls
 def log_activity(
     db: Session,
     *,

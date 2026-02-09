@@ -10,7 +10,6 @@ function CompetitionSection() {
       </div>
 
       <div className="competition-grid">
-        {/* Card 1: Competition Concept */}
         <div className="competition-card">
           <div className="card-icon">Raqobaviy O'qish</div>
           <h3>Raqobaviy O'qish</h3>
@@ -22,7 +21,6 @@ function CompetitionSection() {
           </ul>
         </div>
 
-        {/* Card 2: Trophies & Rewards */}
         <div className="competition-card">
           <div className="card-icon">Trofeylar va Mukofotlar</div>
           <h3>Trofeylar va Mukofotlar</h3>
@@ -34,7 +32,6 @@ function CompetitionSection() {
           </ul>
         </div>
 
-        {/* Card 3: Rankings */}
         <div className="competition-card">
           <div className="card-icon">Reytinglar va Pozitsiyalar</div>
           <h3>Reytinglar va Pozitsiyalar</h3>
@@ -46,7 +43,6 @@ function CompetitionSection() {
           </ul>
         </div>
 
-        {/* Card 4: Leaderboard */}
         <div className="competition-card">
           <div className="card-icon">Global Leaderboard</div>
           <h3>Global Leaderboard</h3>
@@ -58,7 +54,6 @@ function CompetitionSection() {
           </ul>
         </div>
 
-        {/* Card 5: Achievements */}
         <div className="competition-card">
           <div className="card-icon">Erishkunlar va Muvaffaqiyatlar</div>
           <h3>Erishkunlar va Muvaffaqiyatlar</h3>
@@ -70,7 +65,6 @@ function CompetitionSection() {
           </ul>
         </div>
 
-        {/* Card 6: Social Features */}
         <div className="competition-card">
           <div className="card-icon">Do'stlar va Jamoaviy Raqobat</div>
           <h3>Do'stlar va Jamoaviy Raqobat</h3>
@@ -83,7 +77,6 @@ function CompetitionSection() {
         </div>
       </div>
 
-      {/* MVP Info Box */}
       <div className="mvp-info-box">
         <h3>Ushbu xususiyatlar MVP bosqichida!</h3>
         <p>Bu turib o'rnatish mumkin bo'lgan imkoniyatlar - keyingi versiyalarda yana ko'p qiziqarli narsalar kutilmay turibdi. Sizning fikringiz va tavsiyalaringiz bizning rivojlanishimizga yordam beradi.</p>

@@ -51,7 +51,6 @@ export function AuthProvider({ children }) {
         await apiFetch('/api/auth/logout', { method: 'POST' }, token);
       }
     } catch (err) {
-      // ignore
     }
     clearSession();
   };

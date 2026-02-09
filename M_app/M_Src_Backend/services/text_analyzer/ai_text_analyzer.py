@@ -52,7 +52,7 @@ class MegaladoNNTranslator:
         if len(trimmed) <= max_chars:
             return self._translate_chunk(trimmed)
 
-        chunks = self._split_long_block(trimmed, max_chars)#api_key
+        chunks = self._split_long_block(trimmed, max_chars)
         translations: list[str] = []
         for chunk in chunks:
             translated = self._translate_chunk(chunk)
