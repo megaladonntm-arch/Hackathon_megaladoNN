@@ -2,25 +2,25 @@
   return (
     <section className="roadmap section section-mvp" id="mvp">
       <div className="section-head">
-        <h2>MVP</h2>
-        <p>Bolalar uchun kerakli va foydali funksiyalar.</p>
+        <h2>Roadmap</h2>
+        <p>Qayerda va qachon nimalar qilinadi.</p>
       </div>
       <div className="roadmap-list">
         <div className="roadmap-item">
-          <span>3 ta rejim</span>
-          <p>Lupa, ustma-ust va ikki ustun.</p>
+          <span>2026-02 MVP</span>
+          <p>O'qish yordamchisi, tez tarjima, overlay oynasi, UX/UI.</p>
         </div>
         <div className="roadmap-item">
-          <span>Tez tarjima</span>
-          <p>Bir marta tarjima, keyin o‘qish davomida ishlatiladi.</p>
+          <span>2026-03 Gamifikatsiya</span>
+          <p>O'yin elementlari, motivatsiya, ball va badge.</p>
         </div>
         <div className="roadmap-item">
-          <span>Overlay oynasi</span>
-          <p>Matn yonida qulay ko‘rinish.</p>
+          <span>2026-04 AI yangilanishi</span>
+          <p>Yangi AI model, ko'proq tillar, smart analiz.</p>
         </div>
         <div className="roadmap-item">
-          <span>Oson UX</span>
-          <p>O‘qish uchun sodda va tushunarli.</p>
+          <span>2026-05 Jamiyat</span>
+          <p>Foydalanuvchilar feedback, yangi funksiyalar, forum.</p>
         </div>
       </div>
     </section>

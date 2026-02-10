@@ -139,7 +139,6 @@ REACT_APP_API_BASE=http://localhost:8000
 
 ## Контактлар
 
-GitHub: https://github.com/megaladonntm-arch
 
 ---
 

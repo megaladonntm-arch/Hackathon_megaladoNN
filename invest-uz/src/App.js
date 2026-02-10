@@ -6,6 +6,7 @@ import AuthPage from './components/AuthPage';
 import ProfilePage from './components/ProfilePage';
 import TodoPage from './components/TodoPage';
 import ChatPage from './components/ChatPage';
+import About from './components/About';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { useAuth } from './AuthContext';
 import './App.css';
@@ -29,8 +30,8 @@ function App() {
           <div className="brand">
             <div className="brand-mark">RO</div>
             <div>
-              <p className="brand-title">Reader-Overlay Kids</p>
-              <p className="brand-subtitle">8-16 yosh uchun quvnoq o???qish yordamchisi</p>
+              <p className="brand-title">Redok: Reader-Overlay Kids</p>
+              <p className="brand-subtitle">8-16 yosh uchun quvnoq va aqlli o'qish yordamchisi</p>
             </div>
           </div>
           <nav className="nav">
@@ -43,17 +44,17 @@ function App() {
                 {item.label}
               </NavLink>
             ))}
+            <NavLink className="nav-link" to="/about">
+              Loyiha haqida
+            </NavLink>
             <a className="nav-link" href="/#mvp">
-              MVP
+              Roadmap
             </a>
             <a className="nav-link" href="/#problem">
-              Muammo - Yechim
+              Muammo-Yechim
             </a>
             <a className="nav-link" href="/#why">
-              Nega Biz?
-            </a>
-            <a className="nav-link" href="https://github.com/megaladonntm-arch" target="_blank" rel="noreferrer">
-              GitHub
+              Nega biz?
             </a>
             <ThemeSwitcher />
             {isAuthed ? (
@@ -71,6 +72,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/todos" element={<TodoPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/about" element={<About />} />
           <Route path="*" element={<LandingPage />} />
         </Routes>
       </div>

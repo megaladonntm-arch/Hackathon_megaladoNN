@@ -25,11 +25,24 @@ export const ThemeProvider = ({ children }) => {
     setThemeState(themeName);
   };
 
-  const themes = ['light', 'dark', 'blue', 'sunset'];
+    const defaultThemes = [
+      { name: 'light', label: 'Light', colors: { bg: '#fff2d9', accent: '#ff7a59' } },
+      { name: 'dark', label: 'Dark', colors: { bg: '#0d0b17', accent: '#ff7a59' } },
+      { name: 'blue', label: 'Blue', colors: { bg: '#e3f2fd', accent: '#1976d2' } },
+      { name: 'sunset', label: 'Sunset', colors: { bg: '#fff3e0', accent: '#ff6f00' } },
+      { name: 'mint', label: 'Mint', colors: { bg: '#e0fff7', accent: '#3ccf91' } },
+      { name: 'violet', label: 'Violet', colors: { bg: '#f3e4ff', accent: '#7c4dff' } },
+    ];
+    const [customThemes, setCustomThemes] = useState([]);
+    const themes = [...defaultThemes.map(t => t.name), ...customThemes.map(t => t.name)];
+
+    const addCustomTheme = (themeObj) => {
+      setCustomThemes(prev => [...prev, themeObj]);
+    };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, themes }}>
-      {children}
-    </ThemeContext.Provider>
+      <ThemeContext.Provider value={{ theme, setTheme, themes, addCustomTheme, customThemes, defaultThemes }}>
+        {children}
+      </ThemeContext.Provider>
   );
 };

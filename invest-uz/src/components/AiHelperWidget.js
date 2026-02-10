@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000';
 
 const facts = [
-  "Reader-Overlay Kids tarjimani matn ustida ko'rsatadi, fokus yo'qolmaydi.",
+  "Redok tarjimani matn ustida ko'rsatadi, fokus yo'qolmaydi.",
   "\"Lupa\" rejimida kursor ostidagi so'zning tarjimasi chiqadi.",
   "\"Qoplama\" rejimida tarjima asl matn ustiga yumshoq tushadi.",
   'Split-view rejimida asl va tarjima yonma-yon turadi.',
@@ -12,18 +12,24 @@ const facts = [
   "Tarjimadan tasodifiy so'zlar lug'atni mustahkamlaydi.",
   "Matnni joylang, tilni tanlang — qolganini tizim qiladi.",
   "Turli rejimlar bir matnni bir necha usulda o'qishga yordam beradi.",
-  "Reader-Overlay Kids o'qishni tezroq va qiziqarliroq qiladi."
+  "Redok o'qishni tezroq va qiziqarliroq qiladi.",
+  "AI yordamchi sizga loyiha haqida tezkor javoblar beradi va o'qish tajribangizni yaxshilashga yordam beradi.",
+  "Redok yordamchisi sizga o'qish jarayonida tezkor tarjima va tushuntirishlar bilan yordam beradi, shunda siz matnni yaxshiroq tushunishingiz mumkin."
+
 ];
 
 const quickQuestions = [
   'Loyiha nima qiladi?',
   'Qanday ishlaydi?',
   'Qaysi rejimlar bor?',
-  "Kimlar uchun mo'ljallangan?"
+  "Kimlar uchun mo'ljallangan?",
+  'Qaysi funksiyalar bor?',
+
+  
 ];
 
 const defaultGreeting =
-  "Salom! Men megaladoNN IIman. Loyiha haqida savol bering, men faqat shu mavzuda javob beraman.";
+  "Salom! Men megaladoNN Suniy intelektiman. Loyiha haqida savol bering, men faqat shu mavzuda javob beraman.";
 
 const emojiRegex = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu;
 

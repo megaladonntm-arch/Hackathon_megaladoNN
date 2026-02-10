@@ -22,9 +22,6 @@
           <p className="team-desc">Tez va ishonchli tarjima xizmati.</p>
         </div>
       </div>
-      <a className="link-chip" href="https://github.com/megaladonntm-arch" target="_blank" rel="noreferrer">
-        GitHub: megaladonntm-arch
-      </a>
     </section>
   );
 }

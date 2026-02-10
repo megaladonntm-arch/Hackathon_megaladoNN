@@ -1,12 +1,15 @@
-import logging
+﻿import logging
 import os
 from datetime import datetime
 from functools import lru_cache
-import time
-
+import time 
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+import json
+
+load_dotenv()
 
 from M_app.M_Src_Backend import cruds, schemas
 from M_app.M_Src_Backend.db import db_session, get_db, init_db
@@ -21,9 +24,16 @@ logger = logging.getLogger("translator")
 
 app = FastAPI(title="Reader-Overlay API", version="0.2.0")
 
+
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", '["http://localhost:3000"]')
+try:
+    allowed_origins = json.loads(allowed_origins_str)
+except json.JSONDecodeError:
+    allowed_origins = ["http://localhost:3000"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000","https://krystle-dressiest-prejudgementally.ngrok-free.dev" ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -95,9 +105,9 @@ class AssistantResponse(BaseModel):
 
 
 def build_translator(target_language: str) -> MegaladoNNTranslator:
-    api_key = os.getenv("OPENROUTER_API_KEY")
+    api_key = os.getenv("OPENROUTER_API_KEY", "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")
     if not api_key:
-        raise RuntimeError("OPENROUTER_API_KEY is required")
+        raise ValueError("OPENROUTER_API_KEY environment variable is not set")
     model = os.getenv("TRANSLATION_MODEL", "tngtech/deepseek-r1t2-chimera:free")
     base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     return MegaladoNNTranslator(
@@ -114,9 +124,9 @@ def get_translator(target_language: str) -> MegaladoNNTranslator:
 
 
 def build_ai_helper() -> MegaladoNNAIHelper:
-    api_key = os.getenv("OPENROUTER_API_KEY")
+    api_key = "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"
     if not api_key:
-        raise RuntimeError("OPENROUTER_API_KEY is required")
+        raise ValueError("OPENROUTER_API_KEY environment variable is not set")
     model = os.getenv("AI_HELPER_MODEL", "tngtech/deepseek-r1t2-chimera:free")
     base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
     return MegaladoNNAIHelper(
@@ -232,7 +242,7 @@ def logout(authorization: str | None = Header(None), db=Depends(get_db)) -> dict
         return {"status": "ok"}
     token = authorization.replace("Bearer ", "").strip()
     cruds.revoke_session(db, token)
-    return {"status": "ok"}
+    return {"status": "ok"}#translator
 
 
 @app.get("/api/me", response_model=schemas.UserOut)
