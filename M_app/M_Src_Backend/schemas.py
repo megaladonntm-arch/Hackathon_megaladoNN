@@ -189,3 +189,69 @@ class ProfileUpdate(BaseModel):
     display_name: str | None = None
     bio: str | None = None
     interests: list[str] | None = None
+
+
+class QuestionCreate(BaseModel):
+    question_text: str
+    order: int = 0
+
+
+class QuestionOut(QuestionCreate):
+    id: int
+    quiz_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class QuizCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    text: str = Field(min_length=1)
+
+
+class QuizOut(BaseModel):
+    id: int
+    user_id: int
+    title: str
+    is_completed: bool
+    total_score: int
+    created_at: datetime
+    updated_at: datetime
+    questions: list[QuestionOut] = []
+
+    class Config:
+        from_attributes = True
+
+
+class AnswerCreate(BaseModel):
+    question_id: int
+    answer_text: str = Field(min_length=1)
+
+
+class AnswerOut(BaseModel):
+    id: int
+    question_id: int
+    user_id: int
+    answer_text: str
+    score: int
+    feedback: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AnswerEvaluation(BaseModel):
+    question_id: int
+    question_text: str
+    answer_text: str
+
+
+class AnswerEvaluationResponse(BaseModel):
+    question_id: int
+    score: int
+    feedback: str
+    xp_gained: int
+    user_level: int
+    user_xp: int

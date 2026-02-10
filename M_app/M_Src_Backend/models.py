@@ -71,6 +71,9 @@ class User(Base):
     sessions: Mapped[list["UserSession"]] = relationship(
         "UserSession", back_populates="user", cascade="all, delete-orphan"
     )
+    answers: Mapped[list["Answer"]] = relationship(
+        "Answer", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class Text(Base):
@@ -234,3 +237,59 @@ class UserSession(Base):
     revoked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     user: Mapped["User"] = relationship("User", back_populates="sessions")
+
+
+class Quiz(Base):
+    __tablename__ = "quizzes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    text: Mapped[str] = mapped_column(SA_Text, nullable=False)
+    is_completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    total_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    user: Mapped["User"] = relationship("User")
+    questions: Mapped[list["Question"]] = relationship(
+        "Question", back_populates="quiz", cascade="all, delete-orphan"
+    )
+
+
+class Question(Base):
+    __tablename__ = "questions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    quiz_id: Mapped[int] = mapped_column(ForeignKey("quizzes.id"), nullable=False)
+    question_text: Mapped[str] = mapped_column(SA_Text, nullable=False)
+    order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+
+    quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="questions")
+    answers: Mapped[list["Answer"]] = relationship(
+        "Answer", back_populates="question", cascade="all, delete-orphan"
+    )
+
+
+class Answer(Base):
+    __tablename__ = "answers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    answer_text: Mapped[str] = mapped_column(SA_Text, nullable=False)
+    score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    feedback: Mapped[str] = mapped_column(SA_Text, nullable=False, default="")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow
+    )
+
+    question: Mapped["Question"] = relationship("Question", back_populates="answers")
+    user: Mapped["User"] = relationship("User")

@@ -11,6 +11,11 @@ export default function ProfilePage() {
   });
   const [status, setStatus] = useState('');
 
+  // Calculate XP for next level
+  const xpPerLevel = 100;
+  const currentLevelXp = user?.xp % xpPerLevel || 0;
+  const xpProgress = (currentLevelXp / xpPerLevel) * 100;
+
   useEffect(() => {
     if (user) {
       setForm({
@@ -59,13 +64,32 @@ export default function ProfilePage() {
   return (
     <div className="page profile-page">
       <div className="section profile-card">
-        <h1>Profil</h1>
+        <h1>{user.display_name || user.username}</h1>
         <p className="muted">Shaxsiy maʼlumotlaringiz va qiziqishlaringiz.</p>
-        <div className="profile-meta">
-          <span className="chip">Level: {user.level}</span>
-          <span className="chip">XP: {user.xp}</span>
-          <span className="chip">Role: {user.role}</span>
+        
+        {/* XP and Level Section */}
+        <div className="xp-section">
+          <div className="level-badge">
+            <span className="level-number">{user.level}</span>
+            <span className="level-label">Level</span>
+          </div>
+          
+          <div className="xp-info">
+            <div className="xp-stats">
+              <span className="xp-value">{user.xp} XP</span>
+              <span className="xp-next">{currentLevelXp} / {xpPerLevel}</span>
+            </div>
+            <div className="xp-bar">
+              <div className="xp-fill" style={{ width: `${xpProgress}%` }}></div>
+            </div>
+          </div>
         </div>
+
+        <div className="profile-meta">
+          <span className="chip">Role: {user.role}</span>
+          <span className="chip">Foydalanuvchi: {user.username}</span>
+        </div>
+
         <form className="profile-form" onSubmit={onSave}>
           <label>
             Display name
@@ -82,7 +106,7 @@ export default function ProfilePage() {
             />
           </label>
           <label>
-            Qiziqishlar (vergul bilan)
+            Qiziqишlar (vergul bilan)
             <input
               value={form.interests}
               onChange={(event) => setForm({ ...form, interests: event.target.value })}

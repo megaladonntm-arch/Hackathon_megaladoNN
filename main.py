@@ -6,7 +6,7 @@
 
 # Endpoint: generate 10 questions
 
-import logging
+import logging#games_coqs_ai
 import os
 from datetime import datetime
 from functools import lru_cache
@@ -115,19 +115,37 @@ class AssistantResponse(BaseModel):
 class QuestionRequest(BaseModel):
     text: str = Field(min_length=1, max_length=100000)
 
+
 class QuestionResponse(BaseModel):
     questions: list[str]
 
+
 class AnswerRequest(BaseModel):
-    question: str
-    answer: str
-    user_id: int
+    question_id: int
+    answer_text: str = Field(min_length=1)
+
 
 class AnswerResponse(BaseModel):
+    question_id: int
     score: int
     feedback: str
-    exp: int
-    level: int
+    xp_gained: int
+    user_level: int
+    user_xp: int
+
+
+class QuizStartRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    text: str = Field(min_length=1)
+
+
+class QuizResponse(BaseModel):
+    id: int
+    title: str
+    is_completed: bool
+    total_score: int
+    created_at: str
+    questions: list[dict] = []
 
 
 
@@ -540,18 +558,147 @@ def generate_questions(payload: QuestionRequest) -> QuestionResponse:
     questioneer = build_questioneer(payload.text)
     questions = questioneer.generate_questions()
     return QuestionResponse(questions=questions)
-# Endpoint: evaluate answer and add exp/level
-@app.post("/api/answer", response_model=AnswerResponse)
-def evaluate_answer(payload: AnswerRequest) -> AnswerResponse:
-    questioneer = build_questioneer("")
-    result = questioneer.evaluate_answer(payload.question, payload.answer)
-    progress = questioneer.add_experience(str(payload.user_id), result["score"])
-    return AnswerResponse(
-        score=result["score"],
-        feedback=result["feedback"],
-        exp=progress["exp"],
-        level=progress["level"]
+
+
+@app.post("/api/quiz/start", response_model=QuizResponse)
+def start_quiz(
+    payload: QuizStartRequest,
+    user: User = Depends(get_current_user),
+    db=Depends(get_db),
+) -> QuizResponse:
+
+    try:
+        questioneer = build_questioneer(payload.text)
+        questions = questioneer.generate_questions()
+        
+        # Create quiz in database
+        quiz = cruds.create_quiz(
+            db,
+            user_id=user.id,
+            title=payload.title,
+            text=payload.text,
+        )
+        
+        # Create questions
+        cruds.create_questions_batch(db, quiz_id=quiz.id, questions=questions)
+        
+        # Refresh to get questions
+        db.refresh(quiz)
+        
+        return QuizResponse(
+            id=quiz.id,
+            title=quiz.title,
+            is_completed=quiz.is_completed,
+            total_score=quiz.total_score,
+            created_at=quiz.created_at.isoformat(),
+            questions=[
+                {"id": q.id, "text": q.question_text, "order": q.order}
+                for q in quiz.questions
+            ],
+        )
+    except Exception as exc:
+        logger.exception("Quiz start failed")
+        raise HTTPException(status_code=500, detail=f"Quiz start failed: {exc!r}") from exc
+
+
+@app.get("/api/quiz/{quiz_id}", response_model=QuizResponse)
+def get_quiz(
+    quiz_id: int,
+    user: User = Depends(get_current_user),
+    db=Depends(get_db),
+) -> QuizResponse:
+    """Get quiz details"""
+    quiz = cruds.get_quiz(db, quiz_id)
+    if quiz is None:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+    if quiz.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    return QuizResponse(
+        id=quiz.id,
+        title=quiz.title,
+        is_completed=quiz.is_completed,
+        total_score=quiz.total_score,
+        created_at=quiz.created_at.isoformat(),
+        questions=[
+            {"id": q.id, "text": q.question_text, "order": q.order}
+            for q in quiz.questions
+        ],
     )
+
+
+@app.get("/api/quiz")
+def get_user_quizzes(
+    user: User = Depends(get_current_user),
+    db=Depends(get_db),
+) -> list[QuizResponse]:
+    """Get all quizzes for current user"""
+    quizzes = cruds.get_user_quizzes(db, user.id)
+    return [
+        QuizResponse(
+            id=q.id,
+            title=q.title,
+            is_completed=q.is_completed,
+            total_score=q.total_score,
+            created_at=q.created_at.isoformat(),
+            questions=[
+                {"id": qu.id, "text": qu.question_text, "order": qu.order}
+                for qu in q.questions
+            ],
+        )
+        for q in quizzes
+    ]
+
+
+@app.post("/api/answer", response_model=AnswerResponse)
+def evaluate_answer(
+    payload: AnswerRequest,
+    user: User = Depends(get_current_user),
+    db=Depends(get_db),
+) -> AnswerResponse:
+    try:
+        # Get question
+        question = cruds.get_question(db, payload.question_id)
+        if question is None:
+            raise HTTPException(status_code=404, detail="Question not found")
+        
+
+        questioneer = build_questioneer(question.quiz.text)
+        result = questioneer.evaluate_answer(question.question_text, payload.answer_text)
+        
+        # Save answer in database
+        answer = cruds.create_answer(
+            db,
+            question_id=question.id,
+            user_id=user.id,
+            answer_text=payload.answer_text,
+            score=result["score"],
+            feedback=result["feedback"],
+        )
+        
+        # Update user XP and level
+        xp_gained = result["score"]
+        updated_user = cruds.update_user_xp_and_level(db, user.id, xp_gained)
+        
+        # Update quiz total score
+        quiz = question.quiz
+        quiz_answers = cruds.get_question_answers(db, question.id)
+        quiz.total_score = quiz.total_score + xp_gained
+        db.commit()
+        
+        return AnswerResponse(
+            question_id=payload.question_id,
+            score=result["score"],
+            feedback=result["feedback"],
+            xp_gained=xp_gained,
+            user_level=updated_user.level,
+            user_xp=updated_user.xp,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Answer evaluation failed")
+        raise HTTPException(status_code=500, detail=f"Answer evaluation failed: {exc!r}") from exc
 
 if __name__ == "__main__":
     import uvicorn

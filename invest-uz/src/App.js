@@ -6,6 +6,7 @@ import AuthPage from './components/AuthPage';
 import ProfilePage from './components/ProfilePage';
 import TodoPage from './components/TodoPage';
 import ChatPage from './components/ChatPage';
+import QuizPage from './components/QuizPage';
 import About from './components/About';
 import ThemeSwitcher from './components/ThemeSwitcher';
 import { useAuth } from './AuthContext';
@@ -17,6 +18,7 @@ const navItems = [
   { path: '/auth', label: 'Kirish' },
   { path: '/profile', label: 'Profil' },
   { path: '/todos', label: 'To Do' },
+  { path: '/quiz', label: 'Viktorina' },
   { path: '/chat', label: 'Chat' }
 ];
 
@@ -71,6 +73,7 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/todos" element={<TodoPage />} />
+          <Route path="/quiz" element={<QuizPage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/about" element={<About />} />
           <Route path="*" element={<LandingPage />} />

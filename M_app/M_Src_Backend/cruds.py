@@ -19,6 +19,9 @@ from .models import (
     Translation,
     User,
     UserSession,
+    Quiz,
+    Question,
+    Answer,
 )
 
 
@@ -529,3 +532,139 @@ def delete_chat_message(db: Session, message_id: int) -> bool:
     result = db.execute(stmt)
     db.commit()
     return result.rowcount > 0
+
+
+# Quiz CRUD functions
+def create_quiz(
+    db: Session,
+    *,
+    user_id: int,
+    title: str,
+    text: str,
+) -> Quiz:
+    quiz = Quiz(user_id=user_id, title=title, text=text)
+    db.add(quiz)
+    db.commit()
+    db.refresh(quiz)
+    return quiz
+
+
+def get_quiz(db: Session, quiz_id: int) -> Quiz | None:
+    return db.get(Quiz, quiz_id)
+
+
+def get_user_quizzes(db: Session, user_id: int) -> list[Quiz]:
+    stmt = select(Quiz).where(Quiz.user_id == user_id).order_by(Quiz.created_at.desc())
+    return list(db.execute(stmt).scalars().all())
+
+
+def update_quiz(db: Session, quiz_id: int, *, is_completed: bool = None, total_score: int = None) -> Quiz | None:
+    quiz = db.get(Quiz, quiz_id)
+    if quiz is None:
+        return None
+    if is_completed is not None:
+        quiz.is_completed = is_completed
+    if total_score is not None:
+        quiz.total_score = total_score
+    db.commit()
+    db.refresh(quiz)
+    return quiz
+
+
+def delete_quiz(db: Session, quiz_id: int) -> bool:
+    stmt = delete(Quiz).where(Quiz.id == quiz_id)
+    result = db.execute(stmt)
+    db.commit()
+    return result.rowcount > 0
+
+
+# Question CRUD functions
+def create_question(
+    db: Session,
+    *,
+    quiz_id: int,
+    question_text: str,
+    order: int = 0,
+) -> Question:
+    question = Question(quiz_id=quiz_id, question_text=question_text, order=order)
+    db.add(question)
+    db.commit()
+    db.refresh(question)
+    return question
+
+
+def create_questions_batch(
+    db: Session,
+    *,
+    quiz_id: int,
+    questions: list[str],
+) -> list[Question]:
+    question_objs = [
+        Question(quiz_id=quiz_id, question_text=q, order=i)
+        for i, q in enumerate(questions)
+    ]
+    db.add_all(question_objs)
+    db.commit()
+    for q in question_objs:
+        db.refresh(q)
+    return question_objs
+
+
+def get_question(db: Session, question_id: int) -> Question | None:
+    return db.get(Question, question_id)
+
+
+def get_quiz_questions(db: Session, quiz_id: int) -> list[Question]:
+    stmt = select(Question).where(Question.quiz_id == quiz_id).order_by(Question.order)
+    return list(db.execute(stmt).scalars().all())
+
+
+# Answer CRUD functions
+def create_answer(
+    db: Session,
+    *,
+    question_id: int,
+    user_id: int,
+    answer_text: str,
+    score: int = 0,
+    feedback: str = "",
+) -> Answer:
+    answer = Answer(
+        question_id=question_id,
+        user_id=user_id,
+        answer_text=answer_text,
+        score=score,
+        feedback=feedback,
+    )
+    db.add(answer)
+    db.commit()
+    db.refresh(answer)
+    return answer
+
+
+def get_answer(db: Session, answer_id: int) -> Answer | None:
+    return db.get(Answer, answer_id)
+
+
+def get_question_answers(db: Session, question_id: int) -> list[Answer]:
+    stmt = select(Answer).where(Answer.question_id == question_id).order_by(Answer.created_at)
+    return list(db.execute(stmt).scalars().all())
+
+
+def get_user_answer_for_question(db: Session, question_id: int, user_id: int) -> Answer | None:
+    stmt = select(Answer).where(
+        (Answer.question_id == question_id) & (Answer.user_id == user_id)
+    )
+    return db.execute(stmt).scalar_one_or_none()
+
+
+def update_user_xp_and_level(db: Session, user_id: int, xp_gained: int) -> User | None:
+    user = db.get(User, user_id)
+    if user is None:
+        return None
+    user.xp += xp_gained
+    # Level up every 100 XP
+    user.level = 1 + (user.xp // 100)
+    db.commit()
+    db.refresh(user)
+    return user
