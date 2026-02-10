@@ -1,4 +1,12 @@
-﻿import logging
+﻿from M_app.M_Src_Backend.services.game_service.games_coqs_ai import AiQuestioneer
+
+
+
+
+
+# Endpoint: generate 10 questions
+
+import logging
 import os
 from datetime import datetime
 from functools import lru_cache
@@ -104,6 +112,26 @@ class AssistantResponse(BaseModel):
     model: str
 
 
+class QuestionRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=100000)
+
+class QuestionResponse(BaseModel):
+    questions: list[str]
+
+class AnswerRequest(BaseModel):
+    question: str
+    answer: str
+    user_id: int
+
+class AnswerResponse(BaseModel):
+    score: int
+    feedback: str
+    exp: int
+    level: int
+
+
+
+
 def build_translator(target_language: str) -> MegaladoNNTranslator:
     api_key = os.getenv("OPENROUTER_API_KEY", "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")
     if not api_key:
@@ -113,6 +141,16 @@ def build_translator(target_language: str) -> MegaladoNNTranslator:
     return MegaladoNNTranslator(
         api_key=api_key,
         target_language=target_language,
+        model=model,
+        base_url=base_url,
+    )
+def build_questioneer(text: str) -> AiQuestioneer:
+    api_key = os.getenv("OPENROUTER_API_KEY", "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")
+    model = os.getenv("QUESTIONEER_MODEL", "tngtech/deepseek-r1t2-chimera:free")
+    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    return AiQuestioneer(
+        api_key=api_key,
+        text_to_give_question_about_it=text,
         model=model,
         base_url=base_url,
     )
@@ -497,6 +535,23 @@ def assistant(payload: AssistantRequest) -> AssistantResponse:
 
     return AssistantResponse(answer=answer, model=helper.model)
 
+@app.post("/api/questions", response_model=QuestionResponse)
+def generate_questions(payload: QuestionRequest) -> QuestionResponse:
+    questioneer = build_questioneer(payload.text)
+    questions = questioneer.generate_questions()
+    return QuestionResponse(questions=questions)
+# Endpoint: evaluate answer and add exp/level
+@app.post("/api/answer", response_model=AnswerResponse)
+def evaluate_answer(payload: AnswerRequest) -> AnswerResponse:
+    questioneer = build_questioneer("")
+    result = questioneer.evaluate_answer(payload.question, payload.answer)
+    progress = questioneer.add_experience(str(payload.user_id), result["score"])
+    return AnswerResponse(
+        score=result["score"],
+        feedback=result["feedback"],
+        exp=progress["exp"],
+        level=progress["level"]
+    )
 
 if __name__ == "__main__":
     import uvicorn
