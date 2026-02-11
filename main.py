@@ -8,7 +8,6 @@
 import logging
 import os
 from datetime import datetime
-from functools import lru_cache
 import time 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Header, HTTPException, status
@@ -147,53 +146,78 @@ class QuizResponse(BaseModel):
     questions: list[dict] = []
 
 
+FREE_MODELS_TRANSLATION = [
+    
+    "openai/gpt-oss-120b:free",
+    "tngtech/deepseek-r1t2-chimera:free"
+    
+
+]
+
+FREE_MODELS_QUESTIONEER = [
+    
+    "openai/gpt-oss-120b:free",
+    "tngtech/deepseek-r1t2-chimera:free"
+
+]
+
+FREE_MODELS_AI_HELPER = [
+    
+    "openai/gpt-oss-120b:free",
+    "tngtech/deepseek-r1t2-chimera:free"
+]
+
+def is_rate_limit_error(exc: Exception) -> bool:
+    exc_str = str(exc).lower()
+    rate_limit_indicators = [
+        "429",
+        "rate limit",
+        "quota",
+        "too many requests",
+        "limited",
+        "exceeded",
+    ]
+    return any(indicator in exc_str for indicator in rate_limit_indicators)
+
+def try_models(api_key: str, models: list[str], build_fn: callable):
+    last_exc = None
+    for model in models:
+        try:
+            instance = build_fn(api_key, model)
+            return instance
+        except Exception as exc:
+            last_exc = exc
+            continue
+    raise RuntimeError(f"All free models failed: {last_exc!r}") from last_exc
+
+
+def build_translator_model(api_key: str, model: str) -> MegaladoNNTranslator:
+    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    return MegaladoNNTranslator(api_key=api_key, target_language="en", model=model, base_url=base_url)
+
+def build_questioneer_model(api_key: str, model: str, text: str) -> AiQuestioneer:
+    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    return AiQuestioneer(api_key=api_key, text_to_give_question_about_it=text, model=model, base_url=base_url)
+
+def build_ai_helper_model(api_key: str, model: str) -> MegaladoNNAIHelper:
+    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    return MegaladoNNAIHelper(api_key=api_key, model=model, base_url=base_url)
 
 
 def build_translator(target_language: str) -> MegaladoNNTranslator:
-    api_key = os.getenv("OPENROUTER_API_KEY", "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")
-    if not api_key:
-        raise ValueError("OPENROUTER_API_KEY environment variable is not set")
-    model = os.getenv("TRANSLATION_MODEL", "tngtech/deepseek-r1t2-chimera:free")
-    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-    return MegaladoNNTranslator(
-        api_key=api_key,
-        target_language=target_language,
-        model=model,
-        base_url=base_url,
-    )
+    api_key = "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"
+    return try_models(api_key, FREE_MODELS_TRANSLATION, build_translator_model)
+
 def build_questioneer(text: str) -> AiQuestioneer:
-    api_key = os.getenv("OPENROUTER_API_KEY", "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")
-    model = os.getenv("QUESTIONEER_MODEL", "tngtech/deepseek-r1t2-chimera:free")
-    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-    return AiQuestioneer(
-        api_key=api_key,
-        text_to_give_question_about_it=text,
-        model=model,
-        base_url=base_url,
-    )
-
-
-@lru_cache(maxsize=64)
-def get_translator(target_language: str) -> MegaladoNNTranslator:
-    return build_translator(target_language)
-
+    api_key = "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"
+    return try_models(api_key, FREE_MODELS_QUESTIONEER, lambda key, model: build_questioneer_model(key, model, text))
 
 def build_ai_helper() -> MegaladoNNAIHelper:
-    api_key = "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"
-    if not api_key:
-        raise ValueError("OPENROUTER_API_KEY environment variable is not set")
-    model = os.getenv("AI_HELPER_MODEL", "tngtech/deepseek-r1t2-chimera:free")
-    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-    return MegaladoNNAIHelper(
-        api_key=api_key,
-        model=model,
-        base_url=base_url,
-    )
+    api_key = "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"
+    return try_models(api_key, FREE_MODELS_AI_HELPER, build_ai_helper_model)
 
 
-@lru_cache(maxsize=1)
-def get_ai_helper() -> MegaladoNNAIHelper:
-    return build_ai_helper()
+
 
 
 def get_current_user(
@@ -498,36 +522,48 @@ def translate(
     authorization: str | None = Header(None),
     db=Depends(get_db),
 ) -> TranslateResponse:
-    try:
-        translator = get_translator(payload.target_language)
-        translated = translator.translate(payload.text)
-    except Exception as exc:
-        logger.exception("Translation failed")
-        raise HTTPException(status_code=500, detail=f"Translation failed: {exc!r}") from exc
-
-    user = _get_user_from_token(_get_token_from_header(authorization), db)
-    if user is not None:
-        text = cruds.create_text(
-            db,
-            user_id=user.id,
-            content=payload.text,
-            title=None,
-            source_language=None,
-        )
-        cruds.create_translation(
-            db,
-            user_id=user.id,
-            text_id=text.id,
-            target_language=payload.target_language,
-            translated_text=translated,
-            model=translator.model,
-        )
-
-    return TranslateResponse(
-        translated_text=translated,
-        target_language=payload.target_language,
-        model=translator.model,
-    )
+    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    last_exc = None
+    
+    for model in FREE_MODELS_TRANSLATION:
+        try:
+            base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+            translator = MegaladoNNTranslator(api_key=api_key, target_language=payload.target_language, model=model, base_url=base_url)
+            translated = translator.translate(payload.text)
+            
+            user = _get_user_from_token(_get_token_from_header(authorization), db)
+            if user is not None:
+                text = cruds.create_text(
+                    db,
+                    user_id=user.id,
+                    content=payload.text,
+                    title=None,
+                    source_language=None,
+                )
+                cruds.create_translation(
+                    db,
+                    user_id=user.id,
+                    text_id=text.id,
+                    target_language=payload.target_language,
+                    translated_text=translated,
+                    model=translator.model,
+                )
+            
+            return TranslateResponse(
+                translated_text=translated,
+                target_language=payload.target_language,
+                model=translator.model,
+            )
+        except Exception as exc:
+            last_exc = exc
+            if not is_rate_limit_error(exc):
+                logger.exception(f"Translation failed with model {model}")
+                raise
+            logger.warning(f"Model {model} rate limited, trying next model")
+            continue
+    
+    logger.exception("Translation failed with all models")
+    raise HTTPException(status_code=500, detail=f"Translation failed: {last_exc!r}") from last_exc
 
 
 @app.post("/api/random-words", response_model=RandomWordsResponse)
@@ -543,20 +579,48 @@ def random_words(payload: RandomWordsRequest) -> RandomWordsResponse:
 
 @app.post("/api/assistant", response_model=AssistantResponse)
 def assistant(payload: AssistantRequest) -> AssistantResponse:
-    try:
-        helper = get_ai_helper()
-        answer = helper.chat(payload.message)
-    except Exception as exc:
-        logger.exception("AI helper failed")
-        raise HTTPException(status_code=500, detail=f"AI helper failed: {exc!r}") from exc
-
-    return AssistantResponse(answer=answer, model=helper.model)
+    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    last_exc = None
+    
+    for model in FREE_MODELS_AI_HELPER:
+        try:
+            base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+            helper = MegaladoNNAIHelper(api_key=api_key, model=model, base_url=base_url)
+            answer = helper.chat(payload.message)
+            
+            return AssistantResponse(answer=answer, model=helper.model)
+        except Exception as exc:
+            last_exc = exc
+            if not is_rate_limit_error(exc):
+                logger.exception(f"AI helper failed with model {model}")
+                raise
+            logger.warning(f"Model {model} rate limited, trying next model")
+            continue
+    
+    logger.exception("AI helper failed with all models")
+    raise HTTPException(status_code=500, detail=f"AI helper failed: {last_exc!r}") from last_exc
 
 @app.post("/api/questions", response_model=QuestionResponse)
 def generate_questions(payload: QuestionRequest) -> QuestionResponse:
-    questioneer = build_questioneer(payload.text)
-    questions = questioneer.generate_questions()
-    return QuestionResponse(questions=questions)
+    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    last_exc = None
+    
+    for model in FREE_MODELS_QUESTIONEER:
+        try:
+            base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+            questioneer = AiQuestioneer(api_key=api_key, text_to_give_question_about_it=payload.text, model=model, base_url=base_url)
+            questions = questioneer.generate_questions()
+            return QuestionResponse(questions=questions)
+        except Exception as exc:
+            last_exc = exc
+            if not is_rate_limit_error(exc):
+                logger.exception(f"Question generation failed with model {model}")
+                raise
+            logger.warning(f"Model {model} rate limited, trying next model")
+            continue
+    
+    logger.exception("Question generation failed with all models")
+    raise HTTPException(status_code=500, detail=f"Question generation failed: {last_exc!r}") from last_exc
 
 
 @app.post("/api/quiz/start", response_model=QuizResponse)
@@ -565,36 +629,47 @@ def start_quiz(
     user: User = Depends(get_current_user),
     db=Depends(get_db),
 ) -> QuizResponse:
-
-    try:
-        questioneer = build_questioneer(payload.text)
-        questions = questioneer.generate_questions()
-        
-        quiz = cruds.create_quiz(
-            db,
-            user_id=user.id,
-            title=payload.title,
-            text=payload.text,
-        )
-        
-        cruds.create_questions_batch(db, quiz_id=quiz.id, questions=questions)
-        
-        db.refresh(quiz)
-        
-        return QuizResponse(
-            id=quiz.id,
-            title=quiz.title,
-            is_completed=quiz.is_completed,
-            total_score=quiz.total_score,
-            created_at=quiz.created_at.isoformat(),
-            questions=[
-                {"id": q.id, "text": q.question_text, "order": q.order}
-                for q in quiz.questions
-            ],
-        )
-    except Exception as exc:
-        logger.exception("Quiz start failed")
-        raise HTTPException(status_code=500, detail=f"Quiz start failed: {exc!r}") from exc
+    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    last_exc = None
+    
+    for model in FREE_MODELS_QUESTIONEER:
+        try:
+            base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+            questioneer = AiQuestioneer(api_key=api_key, text_to_give_question_about_it=payload.text, model=model, base_url=base_url)
+            questions = questioneer.generate_questions()
+            
+            quiz = cruds.create_quiz(
+                db,
+                user_id=user.id,
+                title=payload.title,
+                text=payload.text,
+            )
+            
+            cruds.create_questions_batch(db, quiz_id=quiz.id, questions=questions)
+            
+            db.refresh(quiz)
+            
+            return QuizResponse(
+                id=quiz.id,
+                title=quiz.title,
+                is_completed=quiz.is_completed,
+                total_score=quiz.total_score,
+                created_at=quiz.created_at.isoformat(),
+                questions=[
+                    {"id": q.id, "text": q.question_text, "order": q.order}
+                    for q in quiz.questions
+                ],
+            )
+        except Exception as exc:
+            last_exc = exc
+            if not is_rate_limit_error(exc):
+                logger.exception(f"Quiz start failed with model {model}")
+                raise
+            logger.warning(f"Model {model} rate limited, trying next model")
+            continue
+    
+    logger.exception("Quiz start failed with all models")
+    raise HTTPException(status_code=500, detail=f"Quiz start failed: {last_exc!r}") from last_exc
 
 
 @app.get("/api/quiz/{quiz_id}", response_model=QuizResponse)
@@ -651,38 +726,50 @@ def evaluate_answer(
     user: User = Depends(get_current_user),
     db=Depends(get_db),
 ) -> AnswerResponse:
+    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    last_exc = None
+    
     try:
         question = cruds.get_question(db, payload.question_id)
         if question is None:
             raise HTTPException(status_code=404, detail="Question not found")
         
-        question = cruds.get_question(db, payload.question_id)
-        if question is None:
-            raise HTTPException(status_code=404, detail="Question not found")
+        for model in FREE_MODELS_QUESTIONEER:
+            try:
+                base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+                questioneer = AiQuestioneer(api_key=api_key, text_to_give_question_about_it=question.quiz.text, model=model, base_url=base_url)
+                result = questioneer.evaluate_answer(question.question_text, payload.answer_text)
+                
+                answer = cruds.create_answer(
+                    db,
+                    question_id=question.id,
+                    user_id=user.id,
+                    answer_text=payload.answer_text,
+                    score=result["score"],
+                    feedback=result["feedback"],
+                )
+                
+                xp_gained = result["score"]
+                updated_user = cruds.update_user_xp_and_level(db, user.id, xp_gained)
+                
+                return AnswerResponse(
+                    question_id=payload.question_id,
+                    score=result["score"],
+                    feedback=result["feedback"],
+                    xp_gained=xp_gained,
+                    user_level=updated_user.level,
+                    user_xp=updated_user.xp,
+                )
+            except Exception as exc:
+                last_exc = exc
+                if not is_rate_limit_error(exc):
+                    logger.exception(f"Answer evaluation failed with model {model}")
+                    raise
+                logger.warning(f"Model {model} rate limited, trying next model")
+                continue
         
-        questioneer = build_questioneer(question.quiz.text)
-        result = questioneer.evaluate_answer(question.question_text, payload.answer_text)
-        
-        answer = cruds.create_answer(
-            db,
-            question_id=question.id,
-            user_id=user.id,
-            answer_text=payload.answer_text,
-            score=result["score"],
-            feedback=result["feedback"],
-        )
-        
-        xp_gained = result["score"]
-        updated_user = cruds.update_user_xp_and_level(db, user.id, xp_gained)
-        
-        return AnswerResponse(
-            question_id=payload.question_id,
-            score=result["score"],
-            feedback=result["feedback"],
-            xp_gained=xp_gained,
-            user_level=updated_user.level,
-            user_xp=updated_user.xp,
-        )
+        logger.exception("Answer evaluation failed with all models")
+        raise HTTPException(status_code=500, detail=f"Answer evaluation failed: {last_exc!r}") from last_exc
     except HTTPException:
         raise
     except Exception as exc:

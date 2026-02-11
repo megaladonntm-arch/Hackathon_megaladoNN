@@ -15,8 +15,8 @@
           <p>Yangi so‘zlar tezroq yodda qoladi.</p>
         </div>
         <div className="why-card">
-          <h3>Kam charchoq</h3>
-          <p>Ko‘p tab almashtirish yo‘q.</p>
+          <h3>Yordamchi vidjet</h3>
+          <p>O‘qishni yengilroq qiladi.</p>
         </div>
       </div>
     </section>
