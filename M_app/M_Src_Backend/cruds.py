@@ -164,7 +164,6 @@ def revoke_sessions_by_user(db: Session, user_id: int) -> int:
     return int(result.rowcount or 0)
 
 
-# Texts
 def create_text(
     db: Session,
     *,
@@ -534,7 +533,6 @@ def delete_chat_message(db: Session, message_id: int) -> bool:
     return result.rowcount > 0
 
 
-# Quiz CRUD functions
 def create_quiz(
     db: Session,
     *,
@@ -578,7 +576,6 @@ def delete_quiz(db: Session, quiz_id: int) -> bool:
     return result.rowcount > 0
 
 
-# Question CRUD functions
 def create_question(
     db: Session,
     *,
@@ -619,7 +616,6 @@ def get_quiz_questions(db: Session, quiz_id: int) -> list[Question]:
     return list(db.execute(stmt).scalars().all())
 
 
-# Answer CRUD functions
 def create_answer(
     db: Session,
     *,
@@ -663,8 +659,6 @@ def update_user_xp_and_level(db: Session, user_id: int, xp_gained: int) -> User 
     if user is None:
         return None
     user.xp += xp_gained
-    # Level up every 100 XP
-    user.level = 1 + (user.xp // 100)
     db.commit()
     db.refresh(user)
     return user

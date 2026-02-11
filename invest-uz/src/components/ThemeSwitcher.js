@@ -13,7 +13,6 @@ function ThemeSwitcher() {
     violet: 'Binafsha Tema',
   };
 
-  // Custom theme creation UI
   const [newThemeName, setNewThemeName] = React.useState('');
   const [newBg, setNewBg] = React.useState('#ffffff');
   const [newAccent, setNewAccent] = React.useState('#ff7a59');

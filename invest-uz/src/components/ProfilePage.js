@@ -11,7 +11,6 @@ export default function ProfilePage() {
   });
   const [status, setStatus] = useState('');
 
-  // Calculate XP for next level
   const xpPerLevel = 100;
   const currentLevelXp = user?.xp % xpPerLevel || 0;
   const xpProgress = (currentLevelXp / xpPerLevel) * 100;
@@ -67,7 +66,6 @@ export default function ProfilePage() {
         <h1>{user.display_name || user.username}</h1>
         <p className="muted">Shaxsiy maʼlumotlaringiz va qiziqishlaringiz.</p>
         
-        {/* XP and Level Section */}
         <div className="xp-section">
           <div className="level-badge">
             <span className="level-number">{user.level}</span>

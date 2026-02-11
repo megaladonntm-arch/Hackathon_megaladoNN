@@ -2,7 +2,6 @@
 from dotenv import load_dotenv
 from .ai_text_analyzer import MegaladoNNTranslator
 
-# Load environment variables
 load_dotenv()
 
 

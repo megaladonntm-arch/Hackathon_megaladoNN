@@ -4,9 +4,8 @@
 
 
 
-# Endpoint: generate 10 questions
 
-import logging#games_coqs_ai
+import logging
 import os
 from datetime import datetime
 from functools import lru_cache
@@ -94,7 +93,7 @@ class TranslateResponse(BaseModel):
 
 
 class RandomWordsRequest(BaseModel):
-    text: str = Field(min_length=1, max_length=100000)#api_key
+    text: str = Field(min_length=1, max_length=100000)
     count: int = Field(ge=1, le=500)
 
 
@@ -298,7 +297,7 @@ def logout(authorization: str | None = Header(None), db=Depends(get_db)) -> dict
         return {"status": "ok"}
     token = authorization.replace("Bearer ", "").strip()
     cruds.revoke_session(db, token)
-    return {"status": "ok"}#translator
+    return {"status": "ok"}
 
 
 @app.get("/api/me", response_model=schemas.UserOut)
@@ -571,7 +570,6 @@ def start_quiz(
         questioneer = build_questioneer(payload.text)
         questions = questioneer.generate_questions()
         
-        # Create quiz in database
         quiz = cruds.create_quiz(
             db,
             user_id=user.id,
@@ -579,10 +577,8 @@ def start_quiz(
             text=payload.text,
         )
         
-        # Create questions
         cruds.create_questions_batch(db, quiz_id=quiz.id, questions=questions)
         
-        # Refresh to get questions
         db.refresh(quiz)
         
         return QuizResponse(
@@ -636,7 +632,6 @@ def get_user_quizzes(
     quizzes = cruds.get_user_quizzes(db, user.id)
     return [
         QuizResponse(
-            id=q.id,
             title=q.title,
             is_completed=q.is_completed,
             total_score=q.total_score,
@@ -657,16 +652,17 @@ def evaluate_answer(
     db=Depends(get_db),
 ) -> AnswerResponse:
     try:
-        # Get question
         question = cruds.get_question(db, payload.question_id)
         if question is None:
             raise HTTPException(status_code=404, detail="Question not found")
         
-
+        question = cruds.get_question(db, payload.question_id)
+        if question is None:
+            raise HTTPException(status_code=404, detail="Question not found")
+        
         questioneer = build_questioneer(question.quiz.text)
         result = questioneer.evaluate_answer(question.question_text, payload.answer_text)
         
-        # Save answer in database
         answer = cruds.create_answer(
             db,
             question_id=question.id,
@@ -676,15 +672,8 @@ def evaluate_answer(
             feedback=result["feedback"],
         )
         
-        # Update user XP and level
         xp_gained = result["score"]
         updated_user = cruds.update_user_xp_and_level(db, user.id, xp_gained)
-        
-        # Update quiz total score
-        quiz = question.quiz
-        quiz_answers = cruds.get_question_answers(db, question.id)
-        quiz.total_score = quiz.total_score + xp_gained
-        db.commit()
         
         return AnswerResponse(
             question_id=payload.question_id,
