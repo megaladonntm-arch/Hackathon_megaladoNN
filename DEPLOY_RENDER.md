@@ -31,3 +31,7 @@ If you use Blueprint deploy, `render.yaml` is already prepared.
 - Fix:
   - keep `PYTHON_VERSION=3.11.9` in Render env vars, then redeploy
   - or use current dependencies (`pydantic>=2.10,<3`) so wheel is used instead of Rust build
+
+## 6) If deploy fails with SQLAlchemy `TypingOnly` AssertionError on Python 3.13
+- Cause: old SQLAlchemy versions are not compatible with Python 3.13 typing internals.
+- Fix: keep SQLAlchemy updated (project uses `sqlalchemy>=2.0.41,<3`).
