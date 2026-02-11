@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { apiFetch } from './api';
 
 const AuthContext = createContext(null);
@@ -11,21 +11,21 @@ export function AuthProvider({ children }) {
   });
   const [error, setError] = useState('');
 
-  const saveSession = (data) => {
+  const saveSession = useCallback((data) => {
     setToken(data.token);
     setUser(data.user);
     localStorage.setItem('ro_token', data.token);
     localStorage.setItem('ro_user', JSON.stringify(data.user));
-  };
+  }, []);
 
-  const clearSession = () => {
+  const clearSession = useCallback(() => {
     setToken('');
     setUser(null);
     localStorage.removeItem('ro_token');
     localStorage.removeItem('ro_user');
-  };
+  }, []);
 
-  const login = async (username, password) => {
+  const login = useCallback(async (username, password) => {
     setError('');
     const data = await apiFetch('/api/auth/login', {
       method: 'POST',
@@ -33,9 +33,9 @@ export function AuthProvider({ children }) {
     });
     saveSession(data);
     return data;
-  };
+  }, [saveSession]);
 
-  const register = async (payload) => {
+  const register = useCallback(async (payload) => {
     setError('');
     const data = await apiFetch('/api/auth/register', {
       method: 'POST',
@@ -43,9 +43,9 @@ export function AuthProvider({ children }) {
     });
     saveSession(data);
     return data;
-  };
+  }, [saveSession]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       if (token) {
         await apiFetch('/api/auth/logout', { method: 'POST' }, token);
@@ -53,7 +53,7 @@ export function AuthProvider({ children }) {
     } catch (err) {
     }
     clearSession();
-  };
+  }, [token, clearSession]);
 
   const value = useMemo(
     () => ({
@@ -67,7 +67,7 @@ export function AuthProvider({ children }) {
       setUser,
       isAuthed: !!token && !!user
     }),
-    [token, user, error]
+    [token, user, error, login, register, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

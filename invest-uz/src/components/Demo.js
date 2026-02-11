@@ -1,8 +1,7 @@
-﻿import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000';
+import { apiFetch } from '../api';
 
 const languageOptions = [
   { value: 'en', label: 'English' },
@@ -59,22 +58,10 @@ function Demo() {
   const translatedTokens = useMemo(() => translatedText.match(/\S+/g) || [], [translatedText]);
 
   const translateText = useCallback(async (text, language) => {
-    const response = await fetch(`${API_BASE}/api/translate`, {
+    const data = await apiFetch('/api/translate', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      },
       body: JSON.stringify({ text, target_language: language })
-    });
-
-    if (!response.ok) {
-      const payload = await response.json().catch(() => ({}));
-      const message = payload.detail || 'Translation failed.';
-      throw new Error(message);
-    }
-
-    const data = await response.json();
+    }, token);
     return data.translated_text || '';
   }, [token]);
 
@@ -104,17 +91,10 @@ function Demo() {
     setRandomStatus('loading');
     setRandomError('');
     try {
-      const response = await fetch(`${API_BASE}/api/random-words`, {
+      const data = await apiFetch('/api/random-words', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: translatedText, count: Number(randomCount) || 1 })
       });
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
-        const message = payload.detail || "Tasodifiy so'zlarni olishmadi.";
-        throw new Error(message);
-      }
-      const data = await response.json();
       setRandomWords(data.random_words || []);
       setRandomTotal(data.word_count || 0);
       setRandomStatus('success');

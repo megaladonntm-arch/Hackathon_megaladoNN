@@ -1,4 +1,4 @@
-﻿function TeamSection() {
+function TeamSection() {
   return (
     <section className="team section section-team" id="team">
       <div className="section-head">

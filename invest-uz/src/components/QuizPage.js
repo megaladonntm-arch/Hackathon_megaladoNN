@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../api';
 import { useAuth } from '../AuthContext';
 
@@ -15,7 +15,7 @@ export default function QuizPage() {
   const [showStartForm, setShowStartForm] = useState(false);
   const [answers, setAnswers] = useState({});
 
-  const loadQuizzes = async () => {
+  const loadQuizzes = useCallback(async () => {
     setStatus('');
     try {
       const data = await apiFetch('/api/quiz', { method: 'GET' }, token);
@@ -23,13 +23,13 @@ export default function QuizPage() {
     } catch (err) {
       setStatus('Viktorinalarni yuklashda xatolik.');
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     if (isAuthed) {
       loadQuizzes();
     }
-  }, [isAuthed]);
+  }, [isAuthed, loadQuizzes]);
 
   const startNewQuiz = async (e) => {
     e.preventDefault();

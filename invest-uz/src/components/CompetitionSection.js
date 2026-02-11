@@ -4,14 +4,14 @@ function CompetitionSection() {
   return (
     <section className="competition-section section" id="competition">
       <div className="section-header">
-        <p className="eyebrow">Sorevnovanie Rejimi</p>
+        <p className="eyebrow">Turnir Rejimi</p>
         <h2>O'qish orqali raqobat qil</h2>
         <p className="section-subtitle">Kitob o'qish qiziqarli bo'ladi - do'stlar bilan pochtalaringni solishtirangiz va yuqori reyting olish uchun o'qing</p>
       </div>
 
       <div className="competition-grid">
         <div className="competition-card">
-          <div className="card-icon">Raqobaviy O'qish</div>
+          <div className="card-icon">Raqobatli O'qish</div>
           <h3>Raqobaviy O'qish</h3>
           <p>Boshqa o'quvchilar bilan kitoblar va matnlarni o'qish orqali raqobat qiling. Har safar o'qigan so'zlari ko'paytirib, reyting oshiringiz va turli mavzulardagi kitoblardan eng yaxshisini toping.</p>
           <ul className="feature-list">
@@ -56,7 +56,7 @@ function CompetitionSection() {
 
         <div className="competition-card">
           <div className="card-icon">Erishkunlar va Muvaffaqiyatlar</div>
-          <h3>Erishkunlar va Muvaffaqiyatlar</h3>
+          <h3>Muvaffaqiyatlar</h3>
           <p>Maxsus e'tirozlarni oling - birinchi kitobni tugatish, turli janrlardan 10 ta kitob, 1000 so'z o'qish va boshqa ko'plab muvaffaqiyatlar.</p>
           <ul className="feature-list">
             <li>50+ achievement tipi</li>

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000';
+import { apiFetch } from '../api';
 
 const facts = [
   "Redok tarjimani matn ustida ko'rsatadi, fokus yo'qolmaydi.",
@@ -10,12 +9,11 @@ const facts = [
   'Yordamchi faqat megaladoNN loyihasi haqida javob beradi.',
   "Platforma 8-16 yoshdagi o'quvchilar uchun mo'ljallangan.",
   "Tarjimadan tasodifiy so'zlar lug'atni mustahkamlaydi.",
-  "Matnni joylang, tilni tanlang — qolganini tizim qiladi.",
+  "Matnni joylang, tilni tanlang - qolganini tizim qiladi.",
   "Turli rejimlar bir matnni bir necha usulda o'qishga yordam beradi.",
   "Redok o'qishni tezroq va qiziqarliroq qiladi.",
-  "AI yordamchi sizga loyiha haqida tezkor javoblar beradi va o'qish tajribangizni yaxshilashga yordam beradi.",
-  "Redok yordamchisi sizga o'qish jarayonida tezkor tarjima va tushuntirishlar bilan yordam beradi, shunda siz matnni yaxshiroq tushunishingiz mumkin."
-
+  "Viktorina rejimi matn bo'yicha avtomatik savollar yaratadi.",
+  "AI yordamchi loyiha funksiyalarini tez tushuntirib beradi."
 ];
 
 const quickQuestions = [
@@ -24,17 +22,22 @@ const quickQuestions = [
   'Qaysi rejimlar bor?',
   "Kimlar uchun mo'ljallangan?",
   'Qaysi funksiyalar bor?',
-
-  
+  'Viktorina qanday ishlaydi?'
 ];
 
 const defaultGreeting =
-  "Salom! Men megaladoNN Suniy intelektiman. Loyiha haqida savol bering, men faqat shu mavzuda javob beraman.";
+  "Salom! Men megaladoNN AI yordamchisiman. Loyiha haqida savol bering, men faqat shu mavzuda javob beraman.";
 
 const emojiRegex = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu;
+const EDGE_GAP = 8;
+const DEFAULT_BUBBLE_SIZE = 58;
 
 function sanitizeText(text) {
   return (text || '').replace(emojiRegex, '').trim();
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function AiHelperWidget() {
@@ -44,13 +47,48 @@ function AiHelperWidget() {
   const [input, setInput] = useState('');
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [position, setPosition] = useState(null);
   const listRef = useRef(null);
+  const helperRef = useRef(null);
+  const dragStateRef = useRef(null);
+  const suppressClickRef = useRef(false);
 
   const currentFact = useMemo(() => facts[factIndex], [factIndex]);
+
+  const clampPosition = useCallback((x, y) => {
+    const rect = helperRef.current?.getBoundingClientRect();
+    const width = rect?.width || DEFAULT_BUBBLE_SIZE;
+    const height = rect?.height || DEFAULT_BUBBLE_SIZE;
+    const maxX = Math.max(EDGE_GAP, window.innerWidth - width - EDGE_GAP);
+    const maxY = Math.max(EDGE_GAP, window.innerHeight - height - EDGE_GAP);
+    return {
+      x: clamp(x, EDGE_GAP, maxX),
+      y: clamp(y, EDGE_GAP, maxY)
+    };
+  }, []);
 
   useEffect(() => {
     setFactIndex(Math.floor(Math.random() * facts.length));
   }, []);
+
+  useEffect(() => {
+    const initialX = Math.max(
+      EDGE_GAP,
+      window.innerWidth - DEFAULT_BUBBLE_SIZE - 22
+    );
+    const initialY = clamp(window.innerHeight * 0.18, 84, 140);
+    setPosition(clampPosition(initialX, initialY));
+  }, [clampPosition]);
+
+  useEffect(() => {
+    if (!position) return;
+    const onResize = () => {
+      setPosition((prev) => (prev ? clampPosition(prev.x, prev.y) : prev));
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [position, clampPosition]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -90,19 +128,10 @@ function AiHelperWidget() {
       setStatus('loading');
 
       try {
-        const response = await fetch(`${API_BASE}/api/assistant`, {
+        const data = await apiFetch('/api/assistant', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: trimmed })
         });
-
-        if (!response.ok) {
-          const payload = await response.json().catch(() => ({}));
-          const message = payload.detail || 'Yordamchi hozircha ishlamayapti.';
-          throw new Error(message);
-        }
-
-        const data = await response.json();
         const cleanedAnswer = sanitizeText(
           data.answer || "Men faqat megaladoNN loyihasi haqida javob beraman."
         );
@@ -116,14 +145,85 @@ function AiHelperWidget() {
     [input, status]
   );
 
+  const handlePointerDown = useCallback(
+    (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      event.preventDefault();
+      const fallbackX = Math.max(EDGE_GAP, window.innerWidth - DEFAULT_BUBBLE_SIZE - 22);
+      const fallbackY = clamp(window.innerHeight * 0.18, 84, 140);
+      const origin = position || clampPosition(fallbackX, fallbackY);
+      dragStateRef.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: origin.x,
+        originY: origin.y,
+        moved: false
+      };
+      setIsDragging(true);
+      event.currentTarget.setPointerCapture(event.pointerId);
+    },
+    [position, clampPosition]
+  );
+
+  const handlePointerMove = useCallback(
+    (event) => {
+      const state = dragStateRef.current;
+      if (!state || state.pointerId !== event.pointerId) return;
+      const deltaX = event.clientX - state.startX;
+      const deltaY = event.clientY - state.startY;
+      if (!state.moved && Math.hypot(deltaX, deltaY) > 3) {
+        state.moved = true;
+      }
+      const next = clampPosition(state.originX + deltaX, state.originY + deltaY);
+      setPosition(next);
+    },
+    [clampPosition]
+  );
+
+  const stopDrag = useCallback((event) => {
+    const state = dragStateRef.current;
+    if (!state || state.pointerId !== event.pointerId) return;
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    suppressClickRef.current = state.moved;
+    dragStateRef.current = null;
+    setIsDragging(false);
+  }, []);
+
+  const toggleOpen = useCallback(() => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+    setOpen((prev) => !prev);
+  }, []);
+
   return (
-    <div className={open ? 'ai-helper open' : 'ai-helper'}>
+    <div
+      ref={helperRef}
+      className={`${open ? 'ai-helper open' : 'ai-helper'}${isDragging ? ' dragging' : ''}`}
+      style={
+        position
+          ? {
+              top: `${position.y}px`,
+              left: `${position.x}px`,
+              right: 'auto'
+            }
+          : undefined
+      }
+    >
       <div className="ai-helper-anchor">
         <div className="ai-plaque">
           <button
             type="button"
             className="ai-bubble"
-            onClick={() => setOpen((prev) => !prev)}
+            onClick={toggleOpen}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={stopDrag}
+            onPointerCancel={stopDrag}
             aria-expanded={open}
           >
             AI

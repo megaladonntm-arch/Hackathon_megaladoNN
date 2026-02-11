@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import Demo from './components/Demo';
@@ -8,7 +9,6 @@ import TodoPage from './components/TodoPage';
 import ChatPage from './components/ChatPage';
 import QuizPage from './components/QuizPage';
 import About from './components/About';
-import ThemeSwitcher from './components/ThemeSwitcher';
 import { useAuth } from './AuthContext';
 import './App.css';
 
@@ -24,43 +24,67 @@ const navItems = [
 
 function App() {
   const { isAuthed, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleNavClick = () => {
+    setMenuOpen(false);
+  };
 
   return (
     <BrowserRouter>
       <div className="app">
         <header className="topbar">
-          <div className="brand">
-            <div className="brand-mark">RO</div>
-            <div>
-              <p className="brand-title">Redok: Reader-Overlay Kids</p>
-              <p className="brand-subtitle">8-16 yosh uchun quvnoq va aqlli o'qish yordamchisi</p>
+          <div className="topbar-main">
+            <div className="brand">
+              <img src="/logo.png" alt="Redok Logo" className="brand-logo" />
+              <div>
+                <p className="brand-title">Redok: Reader-Overlay Kids</p>
+                <p className="brand-subtitle">8-16 yosh uchun quvnoq va aqlli o'qish yordamchisi</p>
+              </div>
             </div>
+            <button
+              type="button"
+              className={menuOpen ? 'nav-toggle active' : 'nav-toggle'}
+              aria-expanded={menuOpen}
+              aria-label="Menyu ochish"
+              onClick={() => setMenuOpen((prev) => !prev)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
           </div>
-          <nav className="nav">
+          <nav className={menuOpen ? 'nav nav-open' : 'nav'}>
             {navItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={handleNavClick}
                 className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
               >
                 {item.label}
               </NavLink>
             ))}
-            <NavLink className="nav-link" to="/about">
+            <NavLink className="nav-link" to="/about" onClick={handleNavClick}>
               Loyiha haqida
             </NavLink>
-            <a className="nav-link" href="/#mvp">
+            <a className="nav-link" href="/#mvp" onClick={handleNavClick}>
               Roadmap
             </a>
-            <a className="nav-link" href="/#problem">
+            <a className="nav-link" href="/#problem" onClick={handleNavClick}>
               Muammo-Yechim
             </a>
-            <a className="nav-link" href="/#why">
+            <a className="nav-link" href="/#why" onClick={handleNavClick}>
               Nega biz?
             </a>
-            <ThemeSwitcher />
             {isAuthed ? (
-              <button className="nav-link nav-logout" onClick={logout}>
+              <button
+                className="nav-link nav-logout"
+                onClick={() => {
+                  handleNavClick();
+                  logout();
+                }}
+              >
                 Chiqish
               </button>
             ) : null}

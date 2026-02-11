@@ -1,4 +1,4 @@
-﻿function WhyUs() {
+function WhyUs() {
   return (
     <section className="why section section-why" id="why">
       <div className="section-head">

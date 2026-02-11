@@ -31,11 +31,41 @@ logger = logging.getLogger("translator")
 app = FastAPI(title="Reader-Overlay API", version="0.2.0")
 
 
-allowed_origins_str = os.getenv("ALLOWED_ORIGINS", '["http://localhost:3000"]')
+DEFAULT_ALLOWED_ORIGINS = ["http://localhost:3000"]
+DEFAULT_FREE_MODELS = [
+    "openai/gpt-oss-120b:free",
+    "tngtech/deepseek-r1t2-chimera:free",
+]
+
+
+def require_env(name: str) -> str:
+    value = (os.getenv(name) or "").strip()
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
+
+def parse_models_env(env_name: str) -> list[str]:
+    raw = (os.getenv(env_name) or "").strip()
+    if not raw:
+        return DEFAULT_FREE_MODELS.copy()
+    if raw.startswith("["):
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            parsed = []
+        if isinstance(parsed, list):
+            models = [str(item).strip() for item in parsed if str(item).strip()]
+            return models or DEFAULT_FREE_MODELS.copy()
+    models = [item.strip() for item in raw.split(",") if item.strip()]
+    return models or DEFAULT_FREE_MODELS.copy()
+
+
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", json.dumps(DEFAULT_ALLOWED_ORIGINS))
 try:
     allowed_origins = json.loads(allowed_origins_str)
 except json.JSONDecodeError:
-    allowed_origins = ["http://localhost:3000"]
+    allowed_origins = DEFAULT_ALLOWED_ORIGINS
 
 app.add_middleware(
     CORSMiddleware,
@@ -146,26 +176,9 @@ class QuizResponse(BaseModel):
     questions: list[dict] = []
 
 
-FREE_MODELS_TRANSLATION = [
-    
-    "openai/gpt-oss-120b:free",
-    "tngtech/deepseek-r1t2-chimera:free"
-    
-
-]
-
-FREE_MODELS_QUESTIONEER = [
-    
-    "openai/gpt-oss-120b:free",
-    "tngtech/deepseek-r1t2-chimera:free"
-
-]
-
-FREE_MODELS_AI_HELPER = [
-    
-    "openai/gpt-oss-120b:free",
-    "tngtech/deepseek-r1t2-chimera:free"
-]
+FREE_MODELS_TRANSLATION = parse_models_env("TRANSLATION_MODELS")
+FREE_MODELS_QUESTIONEER = parse_models_env("QUESTIONEER_MODELS")
+FREE_MODELS_AI_HELPER = parse_models_env("AI_HELPER_MODELS")
 
 def is_rate_limit_error(exc: Exception) -> bool:
     exc_str = str(exc).lower()
@@ -192,28 +205,43 @@ def try_models(api_key: str, models: list[str], build_fn: callable):
 
 
 def build_translator_model(api_key: str, model: str) -> MegaladoNNTranslator:
-    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    base_url = require_env("OPENROUTER_BASE_URL")
     return MegaladoNNTranslator(api_key=api_key, target_language="en", model=model, base_url=base_url)
 
-def build_questioneer_model(api_key: str, model: str, text: str) -> AiQuestioneer:
-    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-    return AiQuestioneer(api_key=api_key, text_to_give_question_about_it=text, model=model, base_url=base_url)
+def build_questioneer_model(
+    api_key: str,
+    model: str,
+    text: str,
+    title: str | None = None,
+) -> AiQuestioneer:
+    base_url = require_env("OPENROUTER_BASE_URL")
+    return AiQuestioneer(
+        api_key=api_key,
+        text_to_give_question_about_it=text,
+        quiz_title=title,
+        model=model,
+        base_url=base_url,
+    )
 
 def build_ai_helper_model(api_key: str, model: str) -> MegaladoNNAIHelper:
-    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    base_url = require_env("OPENROUTER_BASE_URL")
     return MegaladoNNAIHelper(api_key=api_key, model=model, base_url=base_url)
 
 
 def build_translator(target_language: str) -> MegaladoNNTranslator:
-    api_key = "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"
+    api_key = require_env("OPENROUTER_API_KEY")
     return try_models(api_key, FREE_MODELS_TRANSLATION, build_translator_model)
 
-def build_questioneer(text: str) -> AiQuestioneer:
-    api_key = "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"
-    return try_models(api_key, FREE_MODELS_QUESTIONEER, lambda key, model: build_questioneer_model(key, model, text))
+def build_questioneer(text: str, title: str | None = None) -> AiQuestioneer:
+    api_key = require_env("OPENROUTER_API_KEY")
+    return try_models(
+        api_key,
+        FREE_MODELS_QUESTIONEER,
+        lambda key, model: build_questioneer_model(key, model, text, title),
+    )
 
 def build_ai_helper() -> MegaladoNNAIHelper:
-    api_key = "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"
+    api_key = require_env("OPENROUTER_API_KEY")
     return try_models(api_key, FREE_MODELS_AI_HELPER, build_ai_helper_model)
 
 
@@ -522,12 +550,12 @@ def translate(
     authorization: str | None = Header(None),
     db=Depends(get_db),
 ) -> TranslateResponse:
-    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    api_key = require_env("OPENROUTER_API_KEY")
+    base_url = require_env("OPENROUTER_BASE_URL")
     last_exc = None
     
     for model in FREE_MODELS_TRANSLATION:
         try:
-            base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
             translator = MegaladoNNTranslator(api_key=api_key, target_language=payload.target_language, model=model, base_url=base_url)
             translated = translator.translate(payload.text)
             
@@ -579,12 +607,12 @@ def random_words(payload: RandomWordsRequest) -> RandomWordsResponse:
 
 @app.post("/api/assistant", response_model=AssistantResponse)
 def assistant(payload: AssistantRequest) -> AssistantResponse:
-    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    api_key = require_env("OPENROUTER_API_KEY")
+    base_url = require_env("OPENROUTER_BASE_URL")
     last_exc = None
     
     for model in FREE_MODELS_AI_HELPER:
         try:
-            base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
             helper = MegaladoNNAIHelper(api_key=api_key, model=model, base_url=base_url)
             answer = helper.chat(payload.message)
             
@@ -602,13 +630,18 @@ def assistant(payload: AssistantRequest) -> AssistantResponse:
 
 @app.post("/api/questions", response_model=QuestionResponse)
 def generate_questions(payload: QuestionRequest) -> QuestionResponse:
-    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    api_key = require_env("OPENROUTER_API_KEY")
+    base_url = require_env("OPENROUTER_BASE_URL")
     last_exc = None
     
     for model in FREE_MODELS_QUESTIONEER:
         try:
-            base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-            questioneer = AiQuestioneer(api_key=api_key, text_to_give_question_about_it=payload.text, model=model, base_url=base_url)
+            questioneer = AiQuestioneer(
+                api_key=api_key,
+                text_to_give_question_about_it=payload.text,
+                model=model,
+                base_url=base_url,
+            )
             questions = questioneer.generate_questions()
             return QuestionResponse(questions=questions)
         except Exception as exc:
@@ -629,13 +662,19 @@ def start_quiz(
     user: User = Depends(get_current_user),
     db=Depends(get_db),
 ) -> QuizResponse:
-    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    api_key = require_env("OPENROUTER_API_KEY")
+    base_url = require_env("OPENROUTER_BASE_URL")
     last_exc = None
     
     for model in FREE_MODELS_QUESTIONEER:
         try:
-            base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-            questioneer = AiQuestioneer(api_key=api_key, text_to_give_question_about_it=payload.text, model=model, base_url=base_url)
+            questioneer = AiQuestioneer(
+                api_key=api_key,
+                text_to_give_question_about_it=payload.text,
+                quiz_title=payload.title,
+                model=model,
+                base_url=base_url,
+            )
             questions = questioneer.generate_questions()
             
             quiz = cruds.create_quiz(
@@ -707,6 +746,7 @@ def get_user_quizzes(
     quizzes = cruds.get_user_quizzes(db, user.id)
     return [
         QuizResponse(
+            id=q.id,
             title=q.title,
             is_completed=q.is_completed,
             total_score=q.total_score,
@@ -726,7 +766,8 @@ def evaluate_answer(
     user: User = Depends(get_current_user),
     db=Depends(get_db),
 ) -> AnswerResponse:
-    api_key = os.getenv("OPENROUTER_API_KEY") or "sk-your-key"
+    api_key = require_env("OPENROUTER_API_KEY")
+    base_url = require_env("OPENROUTER_BASE_URL")
     last_exc = None
     
     try:
@@ -736,7 +777,6 @@ def evaluate_answer(
         
         for model in FREE_MODELS_QUESTIONEER:
             try:
-                base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
                 questioneer = AiQuestioneer(api_key=api_key, text_to_give_question_about_it=question.quiz.text, model=model, base_url=base_url)
                 result = questioneer.evaluate_answer(question.question_text, payload.answer_text)
                 

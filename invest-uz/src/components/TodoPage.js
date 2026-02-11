@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../api';
 import { useAuth } from '../AuthContext';
 
@@ -8,17 +8,17 @@ export default function TodoPage() {
   const [title, setTitle] = useState('');
   const [status, setStatus] = useState('');
 
-  const loadTodos = async () => {
+  const loadTodos = useCallback(async () => {
     if (!token) return;
     const data = await apiFetch('/api/todos', {}, token);
     setTodos(data);
-  };
+  }, [token]);
 
   useEffect(() => {
     if (isAuthed) {
       loadTodos();
     }
-  }, [isAuthed]);
+  }, [isAuthed, loadTodos]);
 
   const addTodo = async (event) => {
     event.preventDefault();
@@ -30,7 +30,7 @@ export default function TodoPage() {
         { method: 'POST', body: JSON.stringify({ title: title.trim() }) },
         token
       );
-      setTodos([todo, ...todos]);
+      setTodos((prev) => [todo, ...prev]);
       setTitle('');
     } catch (err) {
       setStatus('Saqlashda xatolik.');
@@ -44,7 +44,7 @@ export default function TodoPage() {
         { method: 'PATCH', body: JSON.stringify({ is_done: !todo.is_done }) },
         token
       );
-      setTodos(todos.map((item) => (item.id === todo.id ? updated : item)));
+      setTodos((prev) => prev.map((item) => (item.id === todo.id ? updated : item)));
     } catch (err) {
       setStatus('Yangilashda xatolik.');
     }
@@ -53,9 +53,9 @@ export default function TodoPage() {
   const deleteTodo = async (todoId) => {
     try {
       await apiFetch(`/api/todos/${todoId}`, { method: 'DELETE' }, token);
-      setTodos(todos.filter((item) => item.id !== todoId));
+      setTodos((prev) => prev.filter((item) => item.id !== todoId));
     } catch (err) {
-      setStatus('O‘chirishda xatolik.');
+      setStatus("O'chirishda xatolik.");
     }
   };
 
@@ -64,7 +64,7 @@ export default function TodoPage() {
       <div className="page">
         <div className="section">
           <h2>To Do</h2>
-          <p className="muted">To do roʻyxatini ko‘rish uchun login qiling.</p>
+          <p className="muted">To do ro'yxatini ko'rish uchun login qiling.</p>
         </div>
       </div>
     );
@@ -74,18 +74,18 @@ export default function TodoPage() {
     <div className="page todo-page">
       <div className="section todo-card">
         <h1>To Do list</h1>
-        <p className="muted">Shaxsiy vazifalar roʻyxati.</p>
+        <p className="muted">Shaxsiy vazifalar ro'yxati.</p>
         <form className="todo-form" onSubmit={addTodo}>
           <input
             placeholder="Yangi vazifa..."
             value={title}
             onChange={(event) => setTitle(event.target.value)}
           />
-          <button className="primary-btn">Qoʻshish</button>
+          <button className="primary-btn">Qo'shish</button>
         </form>
         {status ? <p className="status-text">{status}</p> : null}
         <div className="todo-list">
-          {todos.length === 0 ? <p className="muted">Hozircha vazifa yoʻq.</p> : null}
+          {todos.length === 0 ? <p className="muted">Hozircha vazifa yo'q.</p> : null}
           {todos.map((todo) => (
             <div key={todo.id} className={todo.is_done ? 'todo-item done' : 'todo-item'}>
               <button className="todo-check" onClick={() => toggleTodo(todo)}>
@@ -93,7 +93,7 @@ export default function TodoPage() {
               </button>
               <span>{todo.title}</span>
               <button className="todo-delete" onClick={() => deleteTodo(todo.id)}>
-                Oʻchirish
+                O'chirish
               </button>
             </div>
           ))}

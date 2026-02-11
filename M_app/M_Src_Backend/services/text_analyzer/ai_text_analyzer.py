@@ -4,6 +4,13 @@ import re
 from openai import OpenAI
 
 
+def _require_openrouter_base_url() -> str:
+    value = (os.getenv("OPENROUTER_BASE_URL") or "").strip()
+    if not value:
+        raise RuntimeError("Missing OPENROUTER_BASE_URL environment variable.")
+    return value
+
+
 class MegaladoNNTranslator:
     def __init__(
         self,
@@ -14,7 +21,7 @@ class MegaladoNNTranslator:
         base_url: str | None = None,
     ):
         self.client = OpenAI(
-            base_url=base_url or os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+            base_url=base_url or _require_openrouter_base_url(),
             api_key=api_key
             ,
         )
@@ -107,6 +114,5 @@ class MegaladoNNTranslator:
 
     def _is_small_talk(self, text: str) -> bool:
         return bool(self.small_talk_pattern.search(text or ""))
-
 
 

@@ -1,4 +1,10 @@
-export const API_BASE = process.env.REACT_APP_API_BASE || 'http://127.0.0.1:8000';
+const rawApiBase = (process.env.REACT_APP_API_BASE || '').trim();
+
+if (!rawApiBase) {
+  throw new Error('Missing REACT_APP_API_BASE in frontend environment.');
+}
+
+export const API_BASE = rawApiBase.replace(/\/+$/, '');
 
 export async function apiFetch(path, options = {}, token) {
   const headers = {

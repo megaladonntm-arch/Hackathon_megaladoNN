@@ -1,4 +1,4 @@
-﻿function HowItWorks() {
+function HowItWorks() {
   return (
     <section className="how section section-demo" id="demo">
       <div className="section-head">
