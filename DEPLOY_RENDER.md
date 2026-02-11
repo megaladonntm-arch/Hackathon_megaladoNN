@@ -25,3 +25,9 @@ If you use Blueprint deploy, `render.yaml` is already prepared.
 ## 4) Smoke checks
 - `GET /api/health` should return `{"status":"ok"}`
 - OpenAPI docs should load at `/docs`
+
+## 5) If build fails with `maturin` / `cargo` / `Read-only file system`
+- This usually means Render is building with Python `3.13` and tries to compile old `pydantic-core`.
+- Fix:
+  - keep `PYTHON_VERSION=3.11.9` in Render env vars, then redeploy
+  - or use current dependencies (`pydantic>=2.10,<3`) so wheel is used instead of Rust build
