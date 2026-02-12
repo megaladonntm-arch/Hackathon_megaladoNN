@@ -31,7 +31,11 @@ logger = logging.getLogger("translator")
 app = FastAPI(title="Reader-Overlay API", version="0.2.0")
 
 
-DEFAULT_ALLOWED_ORIGINS = ["http://localhost:3000"]
+DEFAULT_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://redok.netlify.app",
+    "https://profound-croissant-4f76d5.netlify.app",
+]
 DEFAULT_FREE_MODELS = [
     "openai/gpt-oss-120b:free",
     "tngtech/deepseek-r1t2-chimera:free",
