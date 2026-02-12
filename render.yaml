@@ -11,3 +11,7 @@ services:
         value: 3.11.9
       - key: DATABASE_URL
         value: sqlite:///./readers.db
+      - key: FRONTEND_URL
+        value: https://profound-croissant-4f76d5.netlify.app
+      - key: ALLOWED_ORIGINS
+        value: '["http://localhost:3000","https://profound-croissant-4f76d5.netlify.app"]'
