@@ -61,11 +61,42 @@ def parse_models_env(env_name: str) -> list[str]:
     return models or DEFAULT_FREE_MODELS.copy()
 
 
-allowed_origins_str = os.getenv("ALLOWED_ORIGINS", json.dumps(DEFAULT_ALLOWED_ORIGINS))
-try:
-    allowed_origins = json.loads(allowed_origins_str)
-except json.JSONDecodeError:
-    allowed_origins = DEFAULT_ALLOWED_ORIGINS
+def parse_allowed_origins() -> list[str]:
+    raw = (os.getenv("ALLOWED_ORIGINS") or "").strip()
+    frontend_url = (os.getenv("FRONTEND_URL") or "").strip()
+    origins: list[str] = []
+
+    if raw:
+        if raw.startswith("["):
+            try:
+                parsed = json.loads(raw)
+            except json.JSONDecodeError:
+                parsed = []
+            if isinstance(parsed, list):
+                origins = [str(item).strip() for item in parsed if str(item).strip()]
+        else:
+            origins = [item.strip() for item in raw.split(",") if item.strip()]
+
+    if frontend_url:
+        origins.append(frontend_url)
+
+    if not origins:
+        origins = DEFAULT_ALLOWED_ORIGINS.copy()
+
+    # Normalize and deduplicate origins to avoid mismatches caused by trailing slash.
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for origin in origins:
+        value = origin.rstrip("/")
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        normalized.append(value)
+    return normalized or DEFAULT_ALLOWED_ORIGINS.copy()
+
+
+allowed_origins = parse_allowed_origins()
+logger.info("CORS allowed origins: %s", allowed_origins)
 
 app.add_middleware(
     CORSMiddleware,
