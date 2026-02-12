@@ -14,4 +14,4 @@ services:
       - key: FRONTEND_URL
         value: https://profound-croissant-4f76d5.netlify.app
       - key: ALLOWED_ORIGINS
-        value: '["http://localhost:3000","https://profound-croissant-4f76d5.netlify.app"]'
+        value: '["http://localhost:3000","https://profound-croissant-4f76d5.netlify.app","https://redok.netlify.app"]'
