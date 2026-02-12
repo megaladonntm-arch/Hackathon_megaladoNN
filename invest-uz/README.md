@@ -26,6 +26,22 @@ It correctly bundles React in production mode and optimizes the build for the be
 The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
+## Netlify Deploy
+
+This project is preconfigured for Netlify:
+
+- Build command: `npm run build`
+- Publish directory: `build`
+- SPA redirects: configured via `netlify.toml` and `public/_redirects`
+
+Environment variable (recommended in Netlify UI):
+
+- `REACT_APP_API_BASE=https://hackathon-megaladonn.onrender.com`
+
+If `REACT_APP_API_BASE` is not provided, frontend falls back to:
+
+- `https://hackathon-megaladonn.onrender.com`
+
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
 ### `npm run eject`

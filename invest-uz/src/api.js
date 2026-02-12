@@ -1,8 +1,5 @@
-const rawApiBase = (process.env.REACT_APP_API_BASE || '').trim();
-
-if (!rawApiBase) {
-  throw new Error('Missing REACT_APP_API_BASE in frontend environment.');
-}
+const DEFAULT_API_BASE = 'https://hackathon-megaladonn.onrender.com';
+const rawApiBase = (process.env.REACT_APP_API_BASE || DEFAULT_API_BASE).trim();
 
 export const API_BASE = rawApiBase.replace(/\/+$/, '');
 
