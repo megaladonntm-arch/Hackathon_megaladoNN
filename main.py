@@ -84,8 +84,9 @@ def parse_allowed_origins() -> list[str]:
     if frontend_url:
         origins.append(frontend_url)
 
-    if not origins:
-        origins = DEFAULT_ALLOWED_ORIGINS.copy()
+    # Always include safe defaults so a misconfigured env var on deploy
+    # does not accidentally block the production frontend.
+    origins.extend(DEFAULT_ALLOWED_ORIGINS)
 
     # Normalize and deduplicate origins to avoid mismatches caused by trailing slash.
     normalized: list[str] = []
